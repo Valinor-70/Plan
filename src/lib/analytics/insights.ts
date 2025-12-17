@@ -1,4 +1,4 @@
-import type { Task, Subject } from '../types';
+import type { Task } from '../types';
 import type { Insight, AnalyticsSummary } from './types';
 import { ROUTES } from '../config/routes';
 

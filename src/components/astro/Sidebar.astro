@@ -32,7 +32,7 @@ const navItems = [
   </div>
   
   <!-- Navigation -->
-  <nav class="flex-1 px-4 py-6 space-y-1" aria-label="Main navigation">
+  <nav class="flex-1 px-4 py-6 space-y-1" aria-label="Main navigation" role="navigation">
     {navItems.map((item) => {
       const isActive = activeNav === item.id;
       return (
@@ -45,6 +45,7 @@ const navItems = [
               : 'text-text-secondary hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-text-primary-light dark:hover:text-text-primary-dark'
           ]}
           aria-current={isActive ? 'page' : undefined}
+          role="menuitem"
         >
           <span class="w-5 h-5" aria-hidden="true">
             {item.icon === 'home' && (
