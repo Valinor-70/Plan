@@ -238,11 +238,13 @@ export const usePomodoroStore = create<PomodoroStore>()(
       onRehydrateStorage: () => (state) => {
         if (state) {
           // Convert date strings back to Date objects
-          state.sessionHistory = state.sessionHistory.map((session) => ({
-            ...session,
-            startTime: new Date(session.startTime),
-            endTime: new Date(session.endTime),
-          }));
+          state.sessionHistory = state.sessionHistory
+            .filter(session => session.startTime && session.endTime) // Only include complete sessions
+            .map((session) => ({
+              ...session,
+              startTime: new Date(session.startTime),
+              endTime: new Date(session.endTime),
+            }));
 
           // Reset today stats on load
           state.todayStats = defaultTodayStats;

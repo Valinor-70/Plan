@@ -18,9 +18,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[ServiceWorker] Caching static assets');
-      return cache.addAll(STATIC_ASSETS).catch((err) => {
-        console.error('[ServiceWorker] Cache addAll error:', err);
-      });
+      return cache.addAll(STATIC_ASSETS);
     })
   );
   self.skipWaiting();

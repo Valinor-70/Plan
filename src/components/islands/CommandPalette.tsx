@@ -159,7 +159,7 @@ export function CommandPalette() {
       id: 'action-toggle-theme',
       label: 'Toggle Theme',
       description: 'Switch between light and dark mode',
-      icon: document.documentElement.classList.contains('dark') ? 
+      icon: typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? 
         <Sun className="w-4 h-4" /> : 
         <Moon className="w-4 h-4" />,
       keywords: ['theme', 'dark', 'light', 'mode'],
