@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Subject } from '../types';
+import { generateId } from '../utils/generateId';
 
 interface SubjectState {
   subjects: Subject[];
@@ -19,15 +20,6 @@ interface SubjectActions {
 }
 
 type SubjectStore = SubjectState & SubjectActions;
-
-const generateId = (): string => {
-  return crypto.randomUUID ? crypto.randomUUID() : 
-    'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
-};
 
 export const useSubjectStore = create<SubjectStore>()(
   persist(

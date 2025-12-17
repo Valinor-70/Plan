@@ -54,7 +54,7 @@ export const formatRelativeDate = (date: Date): string => {
 export const formatDateTime = (date: Date, timeFormat: '12h' | '24h' = '12h'): string => {
   const dateObj = new Date(date);
   const timePattern = timeFormat === '12h' ? 'h:mm a' : 'HH:mm';
-  return format(dateObj, `MMM d, yyyy '${timePattern}'`);
+  return format(dateObj, `MMM d, yyyy ${timePattern}`);
 };
 
 /**

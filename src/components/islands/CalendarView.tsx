@@ -197,7 +197,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ initialDate = new Da
                   <div
                     key={dateKey}
                     onClick={() => handleDateClick(day)}
-                    className={`min-h-[100px] p-2 border-b border-r border-border-light dark:border-border-dark cursor-pointer transition-colors ${
+                    className={`group min-h-[100px] p-2 border-b border-r border-border-light dark:border-border-dark cursor-pointer transition-colors ${
                       isSelected
                         ? 'bg-brand-primary/5'
                         : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'

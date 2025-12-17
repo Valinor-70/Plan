@@ -20,11 +20,14 @@ type SortOption = 'dueDate' | 'priority' | 'createdAt' | 'title';
 type GroupOption = 'none' | 'subject' | 'priority' | 'status';
 
 // Map settings sortBy to our local SortOption
+// The settings store has 'subject' as an option but we don't support sorting by subject in the list view,
+// so we fall back to 'dueDate' for that case
 const mapSortOption = (settingsSortBy: string): SortOption => {
-  if (settingsSortBy === 'subject' || settingsSortBy === 'dueDate' || settingsSortBy === 'priority' || settingsSortBy === 'createdAt') {
-    if (settingsSortBy === 'subject') return 'dueDate';
-    return settingsSortBy;
+  const validOptions: SortOption[] = ['dueDate', 'priority', 'createdAt'];
+  if (validOptions.includes(settingsSortBy as SortOption)) {
+    return settingsSortBy as SortOption;
   }
+  // Default to dueDate for unsupported options (like 'subject' or 'title')
   return 'dueDate';
 };
 

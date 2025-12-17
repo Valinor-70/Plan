@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-react';
 import type { Toast as ToastType, ToastType as ToastVariant } from '../../lib/types';
+import { generateId } from '../../lib/utils/generateId';
 
 interface ToastContextType {
   toasts: ToastType[];
@@ -19,16 +20,6 @@ export const useToast = () => {
     throw new Error('useToast must be used within a ToastProvider');
   }
   return context;
-};
-
-// Helper function to generate unique IDs
-const generateId = (): string => {
-  return crypto.randomUUID ? crypto.randomUUID() : 
-    'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
 };
 
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

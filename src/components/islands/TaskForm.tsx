@@ -4,6 +4,7 @@ import { useTaskStore } from '../../lib/store/taskStore';
 import { useSubjectStore } from '../../lib/store/subjectStore';
 import type { Task, SubTask } from '../../lib/types';
 import { PRIORITY_CONFIG } from '../../lib/types';
+import { generateId } from '../../lib/utils/generateId';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Select from '../ui/Select';
@@ -141,7 +142,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ open, onClose, editTask }) =
     const title = subtaskInput.trim();
     if (title) {
       const newSubtask: SubTask = {
-        id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11),
+        id: generateId(),
         title,
         completed: false,
         order: formData.subtasks.length,
