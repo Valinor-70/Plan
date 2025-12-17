@@ -7,7 +7,10 @@
     "start": "astro dev",
     "build": "astro check && astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
@@ -37,8 +40,14 @@
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.19",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.1",
+    "@testing-library/user-event": "^14.6.1",
     "@types/canvas-confetti": "^1.9.0",
     "@types/dompurify": "^3.0.5",
-    "sharp": "^0.34.5"
+    "@vitest/ui": "^4.0.16",
+    "jsdom": "^27.3.0",
+    "sharp": "^0.34.5",
+    "vitest": "^4.0.16"
   }
 }
