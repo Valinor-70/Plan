@@ -3,6 +3,7 @@ import MainLayout from './MainLayout.astro';
 import Header from '../components/astro/Header.astro';
 import Sidebar from '../components/astro/Sidebar.astro';
 import { CommandPalette } from '../components/islands/CommandPalette';
+import { PWAInstallPrompt } from '../components/islands/PWAInstallPrompt';
 
 export interface Props {
   title?: string;
@@ -32,4 +33,7 @@ const { title, description, activeNav = 'dashboard' } = Astro.props;
   
   <!-- Command Palette (available globally with Cmd/Ctrl+K) -->
   <CommandPalette client:only="react" />
+  
+  <!-- PWA Install Prompt -->
+  <PWAInstallPrompt client:only="react" />
 </MainLayout>

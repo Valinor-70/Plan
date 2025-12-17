@@ -1,0 +1,51 @@
+{
+  "name": "Homework Planner - Task Tracker",
+  "short_name": "Planner",
+  "description": "A privacy-first, local-only homework and task planner designed to help students manage their academic life with powerful analytics and insights.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "productivity", "utilities"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View your main dashboard",
+      "url": "/dashboard",
+      "icons": []
+    },
+    {
+      "name": "Add Task",
+      "short_name": "Add Task",
+      "description": "Create a new task",
+      "url": "/dashboard",
+      "icons": []
+    },
+    {
+      "name": "Pomodoro Timer",
+      "short_name": "Pomodoro",
+      "description": "Start a focus session",
+      "url": "/pomodoro",
+      "icons": []
+    },
+    {
+      "name": "Analytics",
+      "short_name": "Analytics",
+      "description": "View your productivity stats",
+      "url": "/analytics",
+      "icons": []
+    }
+  ],
+  "prefer_related_applications": false
+}
