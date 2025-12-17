@@ -1,448 +1,1625 @@
-Improvements and Action Plan for Homework Planner
-===============================================
+# Task Tracker: SaaS-Quality Improvements Plan (Free & Open)
 
-Date: 2025-12-17
-Location: project root
+**Date**: 2025-12-17  
+**Version**: 2.0  
+**Focus**: Production-ready, completely free task management for students and life
 
-Purpose
--------
-This document is a focused, implementation-ready audit and prioritized action plan for the repository. It is intentionally prescriptive and organized so maintainers can follow steps safely and reversibly. No code changes are performed here — this file only documents what to do and where.
+---
 
-Executive summary
------------------
-- The repository is an Astro static site using React islands and Zustand for client state. The root currently serves the Dashboard (`src/pages/index.astro`).
-- Missing/important items: a public marketing/landing page, an onboarding `/setup` flow, a privacy-first analytics and insights implementation, accessibility improvements, resiliency for persistence, and basic tests/CI.
-- Priority: add a lightweight marketing index + move the Dashboard to `/dashboard` (safe copy-first workflow); implement local-only analytics and an Insights dashboard (no external ad/tracking vendors required unless requested); improve ARIA and modal focus behavior; add tests for stores and CI.
+## 🎯 Executive Summary
 
-Audited issues (concise)
-------------------------
-1. Root (`/`) currently renders the Dashboard at `src/pages/index.astro`. No marketing/landing page exists.
-2. No onboarding/setup page (no `src/pages/setup.astro`), leaving first-run UX unclear.
-3. No analytics/insights implementation. The project could benefit from an internal analytics pipeline that computes completion rate, velocity, subject performance, priority distribution, time analysis, and streaks (see Analytics & Insights spec in `saas_planner_prompt.md`).
-4. `src/layouts/MainLayout.astro` references `/og-image.png` which is not present in `public/`.
-5. Navigation links are hard-coded (e.g., `/` for dashboard) in `src/components/astro/Sidebar.astro` and perhaps other places — moving dashboard requires updating these references.
-6. Accessibility: modals and some interactive toggles can be improved (`aria-*`, focus trap, toast live regions).
-7. Persistence: stores use localStorage; consider IndexedDB fallback for large datasets and add robust import/export and quota handling.
-8. No tests or CI configuration present.
-9. Hydration/SSR: ensure stores and islands that rely on browser-only APIs use client directives and guard access to `window`/`localStorage` to avoid mismatch.
+This document outlines a comprehensive roadmap to elevate the task tracker into a **world-class free product** with SaaS-level quality. Built on Astro, deployable on Cloudflare Pages, with optional Supabase integration for users who want cloud sync.
 
-Priorities & rationale
-----------------------
-P1 (High): landing + setup + route safety — improves onboarding, SEO, and allows Dashboard to be moved without breaking links.
-P2 (High): internal analytics & Insights dashboard — adds concrete user value and can be implemented fully client-side with privacy controls.
-P3 (Medium): accessibility fixes (modal focus trap, ARIA attributes) and missing OG asset.
-P4 (Medium): persistence hardening (IndexedDB fallback, export/import) and tests/CI.
+### Core Philosophy
+- **100% Free Forever**: No paywalls, no premium tiers, no ads
+- **Privacy-First**: Local-first with optional encrypted cloud sync
+- **Students & Life**: Beyond homework - work, personal projects, habits, goals
+- **Performance-Obsessed**: Sub-second interactions everywhere
+- **Open Source Ready**: Community-driven development
 
-Detailed recommended work (actionable steps)
--------------------------------------------
-Notes before you start: prefer copying files and updating route constants rather than immediate renames, so changes are reversible.
+### Technical Constraints (Opportunities!)
+- **Frontend**: Astro + React Islands (current AstroWind base)
+- **Hosting**: Cloudflare Pages (unlimited bandwidth, global edge)
+- **Backend**: Supabase Free Tier (500 MB database, 1 GB file storage, 2 GB bandwidth)
+- **Strategy**: Local-first, cloud-optional architecture
 
-Step 1 — Add route constants (atomic safety)
-  - Files to add: `src/lib/config/routes.ts`
-  - Content (example):
-    export const ROUTES = {
-      home: '/',
-      dashboard: '/dashboard',
-      calendar: '/calendar',
-      tasks: '/tasks',
-      subjects: '/subjects',
-      analytics: '/analytics',
-      settings: '/settings',
-      setup: '/setup'
+---
+
+## 🚀 Tier 1: Core Feature Additions
+
+### 1. **Pomodoro Timer Integration** ⭐
+**User Value**: Stay focused, track work sessions, build productive habits
+
+**Features**:
+- **Task-Attached Timer**:
+  - 25/5/15 default (customizable to any duration)
+  - Visual progress ring with sound notifications
+  - Pause/resume/skip/stop controls
+  - Auto-start breaks and next sessions
+  
+- **Session Tracking**:
+  - Complete session history (unlimited local storage)
+  - Weekly/monthly session analytics
+  - Peak productivity time heatmaps
+  - Interruption tracking (manual log)
+
+- **Advanced Options**:
+  - Custom intervals per task type
+  - Multi-task timer queues ("Work through these 5 tasks")
+  - Long-break scheduling (4+1 pattern)
+  - Background timers with browser notifications
+  - Timer persistence across page refreshes
+  - Focus mode (dims UI, hides distractions)
+
+- **Integrations**:
+  - YouTube/Spotify embeds for focus music
+  - Browser notification API
+  - Favicon badge showing remaining time
+  - System tray integration (PWA)
+
+**Technical Implementation**:
+```typescript
+// New files
+src/components/islands/PomodoroTimer.tsx
+src/lib/store/pomodoroStore.ts
+src/lib/audio/notification-sounds.ts
+src/lib/workers/timer-worker.ts // Web Worker for accuracy
+
+// Store shape
+interface PomodoroState {
+  activeSession: {
+    taskId: string
+    type: 'work' | 'shortBreak' | 'longBreak'
+    startTime: Date
+    duration: number
+    isPaused: boolean
+  } | null
+  queue: TaskTimer[]
+  settings: {
+    workDuration: number
+    shortBreakDuration: number
+    longBreakDuration: number
+    longBreakInterval: number // Every N sessions
+    autoStartBreaks: boolean
+    autoStartWork: boolean
+    soundEnabled: boolean
+    notificationsEnabled: boolean
+  }
+  sessionHistory: Session[]
+  todayStats: {
+    workMinutes: number
+    breakMinutes: number
+    completedSessions: number
+    interruptions: number
+  }
+}
+
+interface Session {
+  id: string
+  taskId: string
+  type: 'work' | 'shortBreak' | 'longBreak'
+  startTime: Date
+  endTime: Date
+  completed: boolean
+  interrupted: boolean
+  note?: string
+}
+```
+
+**UX Features**:
+- Floating widget that follows across pages
+- Keyboard shortcuts: Space (pause/play), Esc (stop), N (next), S (skip break)
+- Celebration animations on session completion
+- Ambient sounds (rain, café, library - bundled, no streaming)
+
+---
+
+### 2. **Planning Page for Task Breakdown** ⭐
+**User Value**: Overcome overwhelm, make large projects manageable
+
+**Visual Planning Interface**:
+- **Timeline Canvas**:
+  - Horizontal day/week view
+  - Drag-and-drop segments onto dates
+  - Resize segments to adjust time allocation
+  - Color-coded by difficulty or category
+  - Dependency lines between segments
+
+- **Smart Distribution**:
+  - Even split: "Divide 20 hours evenly over 5 days"
+  - Front-loaded: "Do most work early, taper off"
+  - Custom: Manual time blocks per day
+  - Workload balancing: Warns if day is overloaded
+
+- **Natural Language Input**:
+  - "Split 6 hours over 3 days" → creates 2h segments
+  - "2h/day for next week avoiding weekends" → 5 × 2h segments
+  - "30 min daily until Friday" → recurring 30m blocks
+  - Parser handles variations: "hrs", "h", "hours"
+
+**Segment Features**:
+```typescript
+interface TaskPlan {
+  taskId: string
+  strategy: 'even' | 'frontload' | 'custom'
+  totalEstimatedMinutes: number
+  segments: TaskSegment[]
+  createdAt: Date
+  notes?: string
+}
+
+interface TaskSegment {
+  id: string
+  date: string // YYYY-MM-DD
+  startTime?: string // HH:MM (optional time blocking)
+  duration: number // minutes
+  description: string
+  difficulty: 1 | 2 | 3 // Easy, Medium, Hard
+  dependencies: string[] // Must complete these segments first
+  completed: boolean
+  actualMinutes?: number // Time tracking
+  notes?: string
+}
+```
+
+**Planning Workflow**:
+```
+[Task Detail] → "Plan This Task" button →
+[Planning Canvas]:
+  1. Enter total estimated time
+  2. Choose date range
+  3. Pick distribution strategy OR use natural language
+  4. Adjust segments (drag, resize, add notes)
+  5. Preview workload across days
+  6. Apply → segments become subtasks with due dates
+```
+
+**Visual Feedback**:
+- Daily workload bar chart below timeline
+- Overload warnings (> 8 hours/day)
+- Weekend avoidance toggle
+- Buffer time recommendations (add 15% padding)
+- Progress visualization as segments complete
+
+---
+
+### 3. **Smart Assistant (Local heuristics & templates)**
+**User Value**: Instant task creation, smart suggestions, reduced friction — implemented without external LLMs.
+
+This section replaces external LLM usage with deterministic, privacy-first helpers that run in the browser or on your edge functions (no third-party LLMs required).
+
+**Capabilities**:
+
+1. **Natural-Language Parsing (deterministic)**:
+  - Use simple, robust parsers (chrono, regex patterns) to interpret phrases like "3 hours", "due Friday", "30m daily" and convert them into task fields or planning segments.
+  - Example: "Split 6 hours over 3 days" → creates evenly distributed `TaskSegment`s.
+
+2. **Heuristic Scheduling**:
+  - Suggests time blocks using local analytics and rules:
+    - Prefer user's peak hours (computed from local session history)
+    - Avoid days already overloaded
+    - Respect weekend avoidance and quiet hours
+
+3. **Contextual Insights (rule-based)**:
+  - Compare current task with historical tasks of the same subject and show estimated time ranges
+  - Show typical completion windows (e.g., "You often finish similar tasks in 2–3 sessions")
+
+4. **Weekly Planning (automated rules)**:
+  - Review upcoming tasks, detect conflicts, and propose a schedule using deterministic scoring (urgency × difficulty ÷ free hours)
+  - Flag burnout risk when suggested workload exceeds configurable thresholds
+
+5. **Task Analysis & Parsing Helpers**:
+  - Syllabus/pdf parsing limited to metadata extraction (dates, headings) via client-side parsers; generate checklist suggestions using fallback heuristics
+
+**Technical Implementation**:
+```typescript
+// Files
+src/lib/assistant/parser.ts       // natural-language parsing (chrono + regex)
+src/lib/assistant/scheduler.ts    // deterministic scheduling heuristics
+src/lib/assistant/templates.ts    // email and message templates
+src/components/islands/Assistant.tsx // UI for assistant suggestions
+
+// Example: build a draft extension email using a template and task/workload data
+function buildExtensionDraft({ recipientName, task, evidence, requestedDeadline }) {
+  return {
+   subject: `Extension Request - ${task.title}`,
+   body: `Dear ${recipientName},\n\nI am writing to request a brief extension on ${task.title} currently due on ${task.dueDate.toDateString()}. I have ${evidence.concurrentTasks} concurrent tasks this week totaling ${evidence.totalEstimatedHours} hours estimated work. I have completed ${Math.round(evidence.completionRate * 100)}% of the task and would appreciate an extension until ${requestedDeadline.toDateString()}.\n\nThank you for your consideration.\n\nBest regards,\n[Your Name]`
+  }
+}
+```
+
+**Privacy Note**:
+- No external LLM calls are required or recommended. All parsing and suggestion logic runs locally or via your own secure edge functions.
+- If a user wants to use a third-party AI service, they must provide and manage their own API key outside the app; the product will not ship with built-in LLM integrations.
+
+---
+
+### 4. **Smart Notifications & Reminders**
+**User Value**: Never miss deadlines, gentle productivity nudges
+
+**Notification Types**:
+
+1. **Due Date Reminders**:
+   - Configurable lead times (1 day, 3 days, 1 week)
+   - Morning digest: "You have 3 tasks due this week"
+   - Evening check-in: "Did you work on X today?"
+
+2. **Pattern-Based Suggestions**:
+   - "You usually work on coding projects at 8 PM"
+   - "This task has been pending for 5 days"
+   - "You haven't taken a break in 3 hours"
+
+3. **Context-Aware**:
+   - Calendar integration: "You're free at 2 PM, good time for deep work"
+   - Weather-based: "Outdoor task suggestion: It's sunny today!"
+   - Energy tracking: "You marked morning as high-energy, here are hard tasks"
+
+4. **Procrastination Detection**:
+   - Tasks aging without progress
+   - Gentle nudges, not nagging
+   - Option to snooze or reschedule
+   - "Break this down?" suggestion for intimidating tasks
+
+**Delivery Channels**:
+- Browser push notifications (service worker)
+- Email digest (optional, Supabase Edge Functions)
+- In-app notification center
+- Desktop notifications (PWA)
+
+**Settings**:
+```typescript
+interface NotificationSettings {
+  enabled: boolean
+  quietHours: { start: string; end: string }
+  dailyDigest: {
+    enabled: boolean
+    time: string // "08:00"
+    email?: string
+  }
+  channels: {
+    push: boolean
+    email: boolean
+    inApp: boolean
+  }
+  types: {
+    dueDateReminders: boolean
+    overdueTasks: boolean
+    suggestions: boolean
+    achievements: boolean
+  }
+  leadTimes: {
+    urgent: number // days before
+    high: number
+    normal: number
+  }
+}
+```
+
+**Implementation**:
+```typescript
+// Notification engine
+src/lib/notifications/scheduler.ts
+src/lib/notifications/delivery.ts
+src/lib/notifications/patterns.ts // ML-like pattern detection
+
+
+
+---
+
+### 5. **Advanced Analytics Dashboard**
+**User Value**: Understand productivity patterns, improve over time
+
+**Core Metrics**:
+
+1. **Completion Analytics**:
+   - Overall completion rate with trend
+   - 30/60/90-day comparisons
+   - Subject/category breakdown
+   - Priority distribution (are you tackling hard tasks?)
+
+2. **Time Tracking**:
+   - Total work time (Pomodoro sessions)
+   - Break-to-work ratio
+   - Average task duration vs estimates
+   - Estimation accuracy score
+
+3. **Productivity Patterns**:
+   - Time-of-day heatmap (when are you most productive?)
+   - Day-of-week patterns (weekday vs weekend)
+   - Task type velocity (quick wins vs deep work)
+   - Procrastination metrics (task age, completion delays)
+
+4. **Predictive Insights**:
+   - Deadline risk assessment (Red/Yellow/Green)
+   - Workload forecasting (next 2 weeks)
+   - Burnout risk detection (sustained overwork)
+   - Task completion probability
+
+5. **Habit Tracking**:
+   - Streaks (current and longest)
+   - Consistency score (tasks completed regularly)
+   - Goal progress (daily/weekly targets)
+   - Contribution calendar (GitHub-style)
+
+**Visualization Types**:
+- Line charts (trends over time)
+- Bar charts (comparisons)
+- Heatmaps (time patterns)
+- Donut charts (distributions)
+- Sparklines (inline mini-charts)
+- Calendar grid (streak visualization)
+
+**Advanced Features**:
+- **Insights Engine**:
+  ```typescript
+  interface Insight {
+    id: string
+    type: 'success' | 'warning' | 'suggestion' | 'milestone'
+    title: string
+    description: string
+    actionable: boolean
+    action?: {
+      label: string
+      handler: () => void
     }
-  - Replace hard-coded route strings in: `src/components/astro/Sidebar.astro`, `src/components/astro/Header.astro`, and any links in islands.
+  }
+  
+  // Examples:
+  // "You're 23% more productive in mornings - schedule hard tasks then"
+  // "Math tasks often exceed estimates by 45 minutes - adjust planning"
+  // "You've completed 100 tasks! 🎉"
+  // "This subject shows declining completion - need help?"
+  ```
 
-Step 2 — Create marketing/landing page (index)
-  - Files to add: `src/pages/index.astro` (marketing) OR `src/pages/marketing.astro` + small redirect index.
-  - Minimal content: hero, brief feature bullets, CTAs: `Get started -> /setup` and `Open dashboard -> /dashboard`.
-  - Update `src/layouts/MainLayout.astro` meta (title/description/og:image) for the homepage.
+- **Custom Reports**:
+  - Weekly productivity summary
+  - Monthly achievement report
+  - Semester overview
+  - Export as PDF or CSV
 
-Step 3 — Add onboarding `setup` page
-  - Files to add:
-    - `src/pages/setup.astro`
-    - `src/components/islands/SetupIsland.tsx` (client-only island)
-  - Setup island responsibilities:
-    - Initialize `settingsStore` (theme, date format, firstDayOfWeek, default priority, compactMode, etc.).
-    - Optionally import sample data from `public/sample-data/sample-tasks.json` using `src/lib/utils/storage.ts` or `taskStore.importData()`.
-    - Mark `settingsStore.firstRunComplete = true` and redirect to `ROUTES.dashboard`.
-  - Make setup idempotent and never overwrite existing user data without confirmation.
+**Technical Stack**:
+```typescript
+// Analytics engine
+src/lib/analytics/compute.ts
+src/lib/analytics/insights.ts
+src/lib/analytics/predictions.ts
+src/components/islands/AnalyticsDashboard.tsx
 
-Step 4 — Move Dashboard (safe, reversible)
-  - Process:
-    1. Copy `src/pages/index.astro` -> `src/pages/dashboard.astro` (preserve client directives and imports).
-    2. Create new `src/pages/index.astro` (marketing page per Step 2) or a redirect that checks `settingsStore.firstRunComplete` and routes accordingly.
-    3. Update all components to use `ROUTES.dashboard` instead of `'/'`.
-    4. Smoke test locally: `npm run dev` and verify `/` and `/dashboard` behave correctly.
-    5. Once validated, remove legacy copies if desired and commit changes on a feature branch.
+// Charts: Recharts (already in project)
+import { LineChart, BarChart, PieChart, Heatmap } from 'recharts'
 
-Step 5 — Internal analytics & Insights (client-only, privacy-first)
-  - Goals: compute metrics described in the Analytics & Insights spec (completion rate, task velocity, subject performance, priority distribution, time analysis, streaks) entirely from the user's local data. Allow export/import and opt-in consent.
-  - Design overview:
-    - Data capture: instrument store actions to emit analytics events (task created, completed, edited, deleted, resumed, time-logged). Do NOT send data externally by default.
-    - Storage: use an `analyticsStore` persisted to IndexedDB (preferred for large timeseries) with localStorage fallback. Add `src/lib/analytics/store.ts` and wrap `idb` (or implement a small wrapper) to persist event logs and aggregated metrics.
-    - Compute: add `src/lib/analytics/compute.ts` with pure functions to compute daily completion rate, 30-day sparkline, tasks-per-day velocity, subject completion rates, priority distribution, estimated vs actual time accuracy, streaks, contribution graph, and projections. Keep these functions deterministic and testable.
-    - UI: implement `src/components/islands/StatsDashboard.tsx` (or `StatsDashboard.tsx`) as a React island that reads aggregated metrics from `analyticsStore` and `taskStore` and renders charts.
-    - Charts: recommended libraries: `recharts` (React-friendly), `react-chartjs-2` (Chart.js), or `apexcharts`. Choose one and add to `package.json` devDependencies. I can scaffold using `recharts` if you confirm.
-    - Insights engine: create `src/lib/analytics/insights.ts` — rule-based heuristics producing human-readable suggestions (e.g., frequent completion times, subjects that exceed estimates, upcoming due counts). Keep heuristics lightweight and explainable.
-    - Consent & settings: add `analyticsEnabled` to `settingsStore` and a consent UI component `src/components/islands/AnalyticsConsent.tsx` that toggles analytics capture and persists consent.
-    - No external sharing by default. If external provider is requested later (PostHog, Plausible), provide an opt-in integration that sends only aggregated or anonymized events after consent.
+// Local computation only - no external analytics
+// All data stays in browser localStorage/IndexedDB
+```
 
-Step 6 — Charts & visualizations (mapping to spec)
-  - Key metric cards (implement as small stat + mini-chart components):
-    1. Completion Rate: current percentage, trend arrow, 30-day sparkline, this-week vs last-week delta.
-    2. Task Velocity: avg tasks completed/day, line chart over last 3 months, productivity score (normalize velocity by active days).
-    3. Subject Performance: horizontal bar chart listing subject completion rates.
-    4. Priority Distribution: donut chart of priority buckets (pending vs completed overlays).
-    5. Time Analysis: aggregated estimated vs actual time per subject or overall, accuracy metric.
-    6. Streak Tracker: current streak days, longest streak, contribution graph (last 90 days).
-  - Additional visualizations: stacked bar (study hours), calendar heatmap (deadline density), hour-of-day heatmap (peak productivity), tag cloud, upcoming workload projection.
-  - Implementation hints:
-    - Pre-aggregate event logs to daily buckets to keep charts performant.
-    - Cache computed aggregates in IndexedDB and recompute only on new events or store changes.
-    - Keep compute functions pure and unit-testable in `src/lib/analytics/compute.test.ts`.
+---
 
-Step 7 — Accessibility & UX hardening
-  - Modal: update `src/components/ui/Modal.tsx` to include `role="dialog"`, `aria-modal="true"`, `aria-labelledby` and implement focus trap (e.g., `focus-trap` package or custom implementation). Restore focus to trigger on close.
-  - Toggles & nav: add `aria-expanded`, `aria-controls`, and keyboard support to `src/components/astro/Header.astro` and `src/components/astro/Sidebar.astro`.
-  - Toaster: ensure toasts use `role="status"` and `aria-live="polite"`.
-  - Run automated a11y checks (axe, lighthouse) in CI.
+### 6. **Cloud Sync with Supabase** (Optional)
+**User Value**: Multi-device access while maintaining privacy
 
-Step 8 — Persistence resilience
-  - Implement IndexedDB persistence for larger datasets using `idb` (or `localforage`) in `src/lib/utils/storage.ts` and add fallback to localStorage for smaller payloads.
-  - Add explicit Export/Import in `src/pages/settings.astro` to let users back up data.
-  - Catch and handle `QuotaExceededError` when writing to storage and present helpful UI to users.
+**Architecture**:
+- **Local-First**: App works fully offline, no account required
+- **Opt-In Sync**: Users choose to enable cloud backup
+- **End-to-End Encryption**: Data encrypted before leaving device
+- **Conflict Resolution**: Last-write-wins with manual merge option
 
-Step 9 — Tests & CI
-  - Add unit tests for:
-    - `src/lib/analytics/compute.ts` (aggregation and metrics)
-    - `src/lib/utils/storage.ts` (import/export validation)
-    - `src/lib/store/*` (task/subject/settings store behaviors)
-  - Tools: `vitest` + `@testing-library/react` + `jsdom`.
-  - CI: `.github/workflows/ci.yml` that runs `npm ci`, `npm run build`, `npm test`.
+**Supabase Free Tier Optimization**:
+```
+Limits:
+- 500 MB database ✓ (more than enough for tasks/projects)
+- 1 GB file storage ✓ (for attachments)
+- 2 GB bandwidth/month ✓ (sync is lightweight)
+- 50,000 monthly active users ✓
 
-Step 10 — Documentation & developer notes
-  - Document analytics behavior and privacy model in `README.md` and `docs/analytics.md` including: data retention, storage location, opt-in/opt-out behavior, and how to enable external provider integrations.
-  - Provide a migration note in `README.md` describing the move from `/` to `/dashboard` if you perform it.
+Strategy:
+- Compress data (gzip)
+- Delta sync (only changes)
+- Lazy load attachments
+- Aggressive local caching
+```
 
-File list changes proposed (consolidated)
---------------------------------------
-Add
-  - `src/lib/config/routes.ts` — route constants
-  - `src/pages/index.astro` — marketing / redirect
-  - `src/pages/setup.astro` — onboarding
-  - `src/components/islands/SetupIsland.tsx` — onboarding island
-  - `src/pages/dashboard.astro` — copy of existing `index.astro` (Dashboard)
-  - `src/lib/analytics/store.ts` — analytics persistence
-  - `src/lib/analytics/compute.ts` — aggregation functions
-  - `src/lib/analytics/insights.ts` — suggestions heuristics
-  - `src/components/islands/StatsDashboard.tsx` — analytics UI
-  - `src/components/islands/AnalyticsConsent.tsx` — consent banner
-  - `public/og-image.png` — OG asset (or update MainLayout)
-Modify
-  - `src/components/astro/Sidebar.astro` — use `ROUTES` and update aria attrs
-  - `src/components/astro/Header.astro` — aria attrs
-  - `src/components/ui/Modal.tsx` — focus trap and aria
-  - `src/lib/utils/storage.ts` — add idb/localforage fallback handling
-  - `src/layouts/MainLayout.astro` — include analytics consent island and updated OG meta
+**Database Schema**:
+```sql
+-- Users table (Supabase Auth)
+users (id, email, created_at)
 
-Privacy & policy (must-have guardrails)
-------------------------------------
-- Analytics are local-first and opt-in. Do not send user data externally unless the user explicitly opts-in to an external provider and the provider is disclosed.
-- Add an `analyticsEnabled` flag in `settingsStore` and persist user consent.
-- Provide clear Export/Import and Delete-All options in Settings.
+-- Encrypted user data
+user_data (
+  user_id UUID REFERENCES users(id),
+  data_type TEXT, -- 'tasks', 'subjects', 'settings'
+  encrypted_data JSONB, -- AES-256 encrypted
+  version INTEGER,
+  updated_at TIMESTAMP
+)
 
-Testing and validation checklist
---------------------------------
-- [ ] Dashboard reachable at `/dashboard` and marketing at `/`.
-- [ ] `/setup` initializes `settingsStore` without overwriting existing user data.
-- [ ] Analytics compute functions produce deterministic outputs for given input events (unit tests present).
-- [ ] IndexedDB fallback works and storage errors are caught and surfaced.
-- [ ] Modal focus trap passes keyboard navigation tests.
-- [ ] CI runs build and tests successfully.
+-- Sync metadata
+sync_log (
+  user_id UUID,
+  device_id TEXT,
+  last_sync TIMESTAMP,
+  changes_count INTEGER
+)
+```
 
-Estimated effort (rough guide)
-----------------------------
-- Route constants + replace references: 0.5–1 hour
-- Marketing index page (minimal): 0.5–2 hours
-- Setup page + island: 2–5 hours
-- Move Dashboard and smoke test: 0.5–1.5 hours
-- Analytics store + compute + tests: 4–12 hours (depends on charts depth)
-- StatsDashboard UI + charts: 4–12 hours (charting lib choice affects time)
-- Accessibility fixes + modal focus trap: 1–3 hours
-- IndexedDB persistence + export/import: 2–6 hours
-- Tests + CI: 2–6 hours
+**Sync Flow**:
+```typescript
+// Sync engine
+src/lib/sync/engine.ts
 
-Follow-up questions (pick as many as needed)
------------------------------------------
-1) Shall I keep the Dashboard at `/` or move it to `/dashboard` now? (I can prepare patches either way.)
-2) Charting library preference for the Insights dashboard: `recharts`, `react-chartjs-2` (Chart.js), or `apexcharts`?
-3) Do you want analytics strictly local-only (default) or do you want an optional, opt-in external provider integration? If external, which provider (PostHog, Plausible, GA)?
-4) Should onboarding be mandatory on first-run (automatic redirect) or optional from the landing page?
+async function syncWithCloud() {
+  // 1. Get local changes since last sync
+  const localChanges = getLocalChanges(lastSyncTime)
+  
+  // 2. Encrypt data
+  const encrypted = await encryptData(localChanges, userKey)
+  
+  // 3. Upload to Supabase
+  await supabase.from('user_data').upsert(encrypted)
+  
+  // 4. Download remote changes
+  const remoteChanges = await supabase
+    .from('user_data')
+    .select()
+    .gt('updated_at', lastSyncTime)
+  
+  // 5. Decrypt and merge
+  const decrypted = await decryptData(remoteChanges, userKey)
+  mergeChanges(localChanges, decrypted)
+  
+  // 6. Update last sync time
+  updateLastSyncTime()
+}
+```
 
-Notes & next steps
-------------------
-- This file is a planning artifact only — no code changed. If you confirm decisions for the follow-up questions I will prepare focused patches for the next tasks (e.g., add `routes.ts`, copy `index.astro` to `dashboard.astro`, scaffold analytics store and compute utilities, and scaffold `StatsDashboard` island).
+**Encryption**:
+- User's password derives encryption key (PBKDF2)
+- Data encrypted with AES-256-GCM
+- Supabase never sees unencrypted data
+- Zero-knowledge architecture
 
-End of file
-Improvements and Action Plan for Homework Planner
-===============================================
+**Authentication**:
+- Magic link (passwordless)
+- OAuth (Google, GitHub)
+- Email + password
+- All via Supabase Auth (free)
 
-Generated: 2025-12-17
-Repository path: project root
+---
 
-Purpose
--------
-This document is a comprehensive audit of the current codebase and a prioritized, foolproof plan to:
-- Add a public landing (marketing) page and an onboarding/setup page.
-- Move the current Dashboard from `/` to `/dashboard` (safe, reversible steps).
-- Integrate analytics in a privacy-conscious, extensible way.
-- Address accessibility and technical-debt items discovered in the codebase.
+### 7. **Mobile-First PWA**
+**User Value**: Native-like experience, works offline, install to home screen
 
-Scope and assumptions
----------------------
-- The codebase is an Astro project using React islands and Zustand stores.
-- The root currently serves the Dashboard in `src/pages/index.astro`.
-- No external services or credentials are required for this work.
-- All local changes are reversible; no database migrations (app stores to localStorage).
+**PWA Features**:
 
-High-level findings (summary)
------------------------------
-1. Root route (`/`) currently hosts the Dashboard (`src/pages/index.astro`). There is no separate marketing/landing page or onboarding route.
-2. No analytics system is integrated. `src/layouts/MainLayout.astro` is the natural place to initialize analytics scripts and consent flows.
-3. Several UI components (modals, mobile nav, header toggles) use DOM logic that can be improved for ARIA semantics and keyboard accessibility.
-4. `public/og-image.png` is referenced from the main layout but not present in `public/` — causes 404s and poor social preview.
-5. Navigation (Sidebar) hardcodes Dashboard link to `/` in `src/components/astro/Sidebar.astro` and possibly other places — moving Dashboard requires updating these.
-6. Stores persist to localStorage via utilities in `src/lib/utils/storage.ts` — this is fine for single-device usage but lacks export/import safety, quotas handling, and cloud backup options.
-7. No tests or CI; `package.json` includes `astro check` in the build process but no automated tests.
+1. **Installation**:
+   - Install prompt on iOS/Android
+   - Custom splash screen
+   - App icon (adaptive icons for Android)
+   - No browser chrome when launched
 
-Complete list of issues and recommended fixes (detailed)
------------------------------------------------------
-Issue 1 — No marketing / landing page
-  - Details: The root (`/`) goes to `src/pages/index.astro`, which renders the Dashboard island. This prevents a public/marketing page and confuses first-time users.
-  - Risks: SEO/social preview suffers; inability to present signup/onboarding flows before dashboard.
-  - Recommendation:
-    1. Move Dashboard to `src/pages/dashboard.astro` (or duplicate first, then delete) — see Move Dashboard steps below.
-    2. Create `src/pages/index.astro` containing a marketing or redirect page (or `src/pages/marketing.astro` and make `index.astro` a redirect).
-    3. Update site-level metadata in `src/layouts/MainLayout.astro` for correct OG/meta tags.
+2. **Offline Support**:
+   - Service Worker caching
+   - Background sync when connection returns
+   - Offline indicator
+   - Queue actions for later sync
 
-Issue 2 — No onboarding/setup page
-  - Details: No `src/pages/setup.astro` or similar exists for first-time setup.
-  - Risks: Users have to manually set options; onboarding cannot initialize sample data.
-  - Recommendation:
-    1. Add `src/pages/setup.astro` that uses `MainLayout` or `DashboardLayout` for look/feel.
-    2. Create a client island `src/components/islands/SetupIsland.tsx` to perform store writes, call `settingsStore` actions, and optionally import sample tasks via `src/lib/utils/storage.ts`.
-    3. Make the setup flow optional or required based on existence of a `settingsStore.firstRunComplete` flag.
+3. **Native Integrations**:
+   - Push notifications
+   - Share target (add tasks from other apps)
+   - Camera access (attach photos)
+   - File system access (import/export)
 
-Issue 3 — Analytics absent (no centralized initializer)
-  - Details: No vendor analytics script or init module exists. `MainLayout` is ideal to host analytics and consent components.
-  - Recommendation:
-    1. Add `src/lib/analytics/init.ts` that exports `initAnalytics(opts)`, `trackPageview()`, `trackEvent(name, props)`.
-    2. Add an analytics consent banner component (client island) and call `initAnalytics()` after consent.
-    3. Add vendor snippet to `src/layouts/MainLayout.astro` (head) or inject via `client:idle` island depending on provider.
-    4. Suggested providers: Plausible (privacy-friendly), PostHog (self-hostable / event tracking), Google Analytics (if you need GA features). For a simple privacy-first choice, use Plausible or Matomo.
+4. **Performance**:
+   - Pre-cache critical routes
+   - Lazy load non-essential features
+   - Image optimization
+   - Virtual scrolling for long lists
 
-Issue 4 — Navigation link coupling and move risk
-  - Details: `src/components/astro/Sidebar.astro` and mobile nav reference `/` for Dashboard. UI logic and possibly tests assume root is Dashboard.
-  - Recommendation:
-    1. Replace hard-coded `/` occurrences with a single constant export `src/lib/config/routes.ts` (e.g., export const ROUTES = { home: '/', dashboard: '/dashboard', calendar: '/calendar' }).
-    2. Update components to import ROUTES and use `ROUTES.dashboard`.
-    3. When moving Dashboard, update `ROUTES.home` to point to `/` marketing page if necessary.
+**Implementation**:
+```typescript
+// Service Worker
+public/sw.js
 
-Issue 5 — Accessibility issues
-  - Details: Modal focus trapping, ARIA attributes for toggles and mobile nav, and some dynamic content may lack proper live-region announcements.
-  - Recommendation:
-    1. Use a well-maintained focus-trap library or implement robust trap inside `src/components/ui/Modal.tsx` with `aria-modal`, `role=\"dialog\"`, `aria-labelledby`/`aria-describedby`.
-    2. Add `aria-expanded`/`aria-controls` to toggle buttons in `src/components/astro/Header.astro` and `src/components/astro/Sidebar.astro`.
-    3. Ensure toasts use `role=\"status\"` and polite live-region; apply `aria-live=\"polite\"` for non-critical messages.
-    4. Run axe or Lighthouse accessibility audits during CI.
+// Manifest
+public/manifest.json
+{
+  "name": "Task Tracker",
+  "short_name": "Tasks",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#4F46E5",
+  "background_color": "#FFFFFF",
+  "icons": [/* ... */]
+}
 
-Issue 6 — Storage durability and export/import
-  - Details: Stores rely on localStorage via `src/lib/utils/storage.ts`. There's an export/import helper but no default initial sample data for first-run.
-  - Recommendation:
-    1. Add a sample dataset JSON `public/sample-data/sample-tasks.json` and add an import flow in setup.
-    2. Add an explicit `Export/Import` UI in `src/pages/settings.astro` (or reuse existing logic) with clear user instructions.
-    3. When storing large payloads, catch quota-exceeded errors and provide user guidance.
+// Workbox for SW generation
+import { generateSW } from 'workbox-build'
+```
 
-Issue 7 — Missing asset: OG image
-  - Details: `src/layouts/MainLayout.astro` references `/og-image.png` yet this file is absent from `public/`.
-  - Recommendation: add `public/og-image.png` or update `MainLayout` to reference an existing asset. If you want generated OG images, add script/process to build them during CI.
+**Mobile Optimizations**:
+- Touch-friendly tap targets (44×44px minimum)
+- Swipe gestures (complete, delete, postpone)
+- Bottom sheet modals (easier thumb reach)
+- Haptic feedback (vibration on actions)
+- Pull-to-refresh
 
-Issue 8 — No tests or CI
-  - Details: No unit tests or CI config present.
-  - Recommendation:
-    1. Add Vitest for unit testing (fast for `src/lib/*` logic). Create `tests/stores.test.ts` covering `taskStore` and `subjectStore` functions (add/update/delete, selectors).
-    2. Add `.github/workflows/ci.yml` to run `npm ci`, `npm run build`, and `npm test`.
+---
 
-Issue 9 — Hydration and SSR concerns
-  - Details: Stores rehydrate date fields and rely on browser-only APIs. Most islands handle client hydration, but review for hydration mismatches.
-  - Recommendation:
-    1. Ensure store initialization uses safe client-only guards (e.g., `if (typeof window !== 'undefined')` before accessing localStorage).
-    2. Use `client:load` or `client:visible` judiciously on islands that require hydrated store data to prevent mismatch errors.
+### 8. **Collaboration Features**
+**User Value**: Group projects, shared goals, accountability partners
 
-Issue 10 — UX: Setup vs. Dashboard flow
-  - Details: If you move the Dashboard from `/` to `/dashboard` you need a migration strategy so existing users can still access their data.
-  - Recommendation:
-    1. Implement a small redirection page at `/` (index.astro) that detects `firstRunComplete` and redirects to `/dashboard` (client-side) if onboarding done, else to `/setup`.
-    2. Add visible links in Footer or Header to `Settings` and `Export` in case users cannot find their data.
+**Sharing Options**:
 
-Detailed, step-by-step tasks (implementation-ready)
------------------------------------------------
-The following steps are written to be executed in order. Each top-level step includes a short checklist, files to touch, and example code notes.
+1. **Read-Only Sharing**:
+   - Generate shareable link
+   - Viewer can see tasks/progress
+   - No account required
+   - Expiration options (7 days, 30 days, never)
 
-Step A — Create `improvements.txt` (this file)
-  - Done: add this file to project root.
+2. **Collaborative Workspaces** (via Supabase):
+   - Create shared projects
+   - Invite members (email)
+   - Real-time updates (Supabase Realtime)
+   - Task assignment
+   - Comments and discussions
+   - Activity feed
 
-Step B — Introduce a route constants file
-  - Purpose: avoid hard-coded routes across components and make Dashboard move atomic.
-  - Files to add:
-    - `src/lib/config/routes.ts`
-  - Implementation (example):
-    export const ROUTES = {
-      home: '/',
-      dashboard: '/dashboard',
-      calendar: '/calendar',
-      tasks: '/tasks',
-      subjects: '/subjects',
-      settings: '/settings',
-      analytics: '/analytics',
-      setup: '/setup'
+3. **Export/Import**:
+   - Share via JSON export
+   - Import from common formats:
+     - Todoist CSV
+     - Notion CSV
+     - Google Tasks
+     - Apple Reminders
+     - Standard iCal
+
+**Permissions**:
+```typescript
+type Role = 'owner' | 'editor' | 'viewer'
+
+interface Workspace {
+  id: string
+  name: string
+  members: {
+    userId: string
+    role: Role
+    joinedAt: Date
+  }[]
+  tasks: Task[]
+  settings: WorkspaceSettings
+}
+```
+
+**Real-Time Sync**:
+```typescript
+// Supabase Realtime (free tier: 200 concurrent connections)
+const channel = supabase
+  .channel('workspace:123')
+  .on('postgres_changes', 
+    { 
+      event: 'INSERT', 
+      schema: 'public', 
+      table: 'tasks' 
+    },
+    (payload) => {
+      updateLocalTask(payload.new)
     }
-  - Update: replace hard-coded `'/'` and other route strings in `src/components/astro/Sidebar.astro`, `Header.astro`, and any other components.
+  )
+  .subscribe()
+```
 
-Step C — Add marketing/landing page
-  - Files to add:
-    - `src/pages/index.astro` (new marketing page) OR `src/pages/marketing.astro` + update index.astro to redirect.
-  - Content suggestions:
-    - Hero section describing the planner, CTA buttons: `Get started` -> `/setup`; `Open Dashboard` -> `/dashboard`.
-    - Testimonials, feature list, privacy blurb (local-first), download/export notes.
-  - Example minimal `src/pages/index.astro` content:
-    ---
-    import MainLayout from '../layouts/MainLayout.astro'
-    ---
+**Supabase Budget Management**:
+- Realtime connections: 200 limit (more than enough for study groups)
+- Use presence for "who's online" feature
+- Batch updates to reduce bandwidth
+- Local-first: only sync when needed
 
-    <MainLayout title="Homework Planner — Plan Smarter">
-      <main>
-        <h1>Homework Planner</h1>
-        <p>Local-first, privacy-respecting study planner.</p>
-        <a href="/setup">Get started</a>
-        <a href="/dashboard">Open dashboard</a>
-      </main>
-    </MainLayout>
+---
 
-Step D — Create onboarding setup page and island
-  - Files to add:
-    - `src/pages/setup.astro` — uses `MainLayout` or `DashboardLayout`.
-    - `src/components/islands/SetupIsland.tsx` — small React component that runs client-only store writes.
-  - Setup behavior checklist:
-    - Offer theme choice (light/dark/system) and persist via `settingsStore.toggleTheme()` or direct setter.
-    - Offer sample data import: call `storage.import(sampleData)` or write sample tasks to `taskStore`.
-    - Set `settingsStore.firstRunComplete = true`.
-    - Redirect to `ROUTES.dashboard` on completion.
-  - Safety note: make the setup idempotent — do not overwrite existing data unless confirmed.
+### 9. **Rich Content & Attachments**
+**User Value**: Keep everything in one place, reduce app-switching
 
-Step E — Move the Dashboard from `/` to `/dashboard` (safe approach)
-  - Rationale: Keep the original page until new landing exists; don't delete until verified.
-  - Checklist:
-    1. Copy `src/pages/index.astro` -> `src/pages/dashboard.astro` (preserve imports and islands).
-    2. Create new `src/pages/index.astro` marketing file (Step C). If you prefer redirecting temporarily, make index.astro a redirect page that checks `firstRunComplete` and navigates accordingly.
-    3. Update all nav references to use `ROUTES.dashboard` (see Step B).
-    4. Run dev and smoke test: `npm run dev` and verify Dashboard at `/dashboard` and marketing page at `/`.
-    5. When stable, delete old `src/pages/index.astro` copy if not needed (or keep as backup).
+**Supported Content**:
 
-Step F — Analytics integration (example with Plausible / GA / PostHog)
-  - Recommendation: implement a provider-agnostic initializer and a consent flow.
-  - Files to add:
-    - `src/lib/analytics/init.ts` — exports `initAnalytics(provider, config)`, `trackPageview()`, `trackEvent()`.
-    - `src/components/islands/AnalyticsConsent.tsx` — small consent banner island.
-    - Edit `src/layouts/MainLayout.astro` to include vendor snippet conditionally or include a small `client:idle` island that calls `initAnalytics()` after consent.
-  - Implementation notes — Plausible:
-    - Add snippet to `<head>` in `MainLayout` (deferred if you want consent-first):
-      <script defer data-domain="yourdomain.com" src="https://plausible.io/js/plausible.js"></script>
-    - Use `window.plausible('pageview')` for manual events.
-  - Implementation notes — Google Analytics (gtag):
-    - Add the recommended snippet with your measurement ID to `MainLayout` head.
-    - Use `gtag('config','G-XXXX', { 'page_path': window.location.pathname })` on initial load and client-side nav events.
-  - Implementation notes — PostHog:
-    - Install `posthog-js` and call `posthog.init('YOUR_KEY', { api_host: 'https://app.posthog.com' })` in `initAnalytics`.
-    - Use `posthog.capture('task_created', {...})` from islands.
-  - Tracking SPA navigations:
-    - Astro sites do full-page nav by default, but if you rely on client-side navigation you should call `trackPageview()` on route changes inside islands or a small client script that listens for `popstate`.
+1. **File Attachments**:
+   - Drag-and-drop upload
+   - Types: PDF, images, docs, spreadsheets, audio, video
+   - Inline preview (PDF.js for PDFs, lightbox for images)
+   - File size limit: 10 MB per file (Supabase free: 1 GB total)
 
-Step G — Accessibility fixes (actionable list)
-  - `src/components/ui/Modal.tsx`:
-    - Add `role=\"dialog\"` and `aria-modal=\"true\"`.
-    - Ensure `aria-labelledby` references the modal title element id.
-    - Implement focus trap (e.g., `focus-trap` library) and restore focus to the trigger on close.
-  - `src/components/astro/Header.astro` and `src/components/astro/Sidebar.astro`:
-    - Add `aria-expanded` and `aria-controls` on toggles.
-    - Ensure keyboard-accessible skip links (e.g., `Skip to content`).
-  - Toasts and live regions:
-    - Use `role=\"status\"` and `aria-live=\"polite\"` for non-critical toasts; `assertive` for urgent alerts only.
-  - Run automated a11y checks in CI (axe, lighthouse).
+2. **Rich Text Notes**:
+   - Markdown editor with live preview
+   - Syntax highlighting (code blocks)
+   - LaTeX math support (KaTeX): $E = mc^2$
+   - Checklists, tables, blockquotes
+   - Image paste support
 
-Step H — Tests and CI
-  - Files to add:
-    - `package.json` devDependencies: `vitest`, `@testing-library/react`, `jsdom` (if not already present).
-    - `tests/stores.test.ts` — tests for `taskStore` and `subjectStore` behaviors.
-    - `.github/workflows/ci.yml` — run `npm ci`, `npm run build`, and `npm test`.
-  - Example test targets:
-    - Add/update/delete tasks via `taskStore` actions.
-    - Ensure `storage` export and import functions behave as expected.
+3. **Voice Notes**:
+   - Record audio directly
+   - Browser MediaRecorder API
+   - Playback with speed control
+   - Optional: Web Speech API for transcription (browser-native)
 
-Step I — Deployment, build notes, and rollbacks
-  - Build pipeline currently runs `astro check && astro build` from `package.json`.
-  - If deploying to static hosts (Netlify, Vercel, GitHub Pages), ensure correct `adapter` is configured in `astro.config.mjs` if required.
-  - Rollback approach: keep `dashboard.astro` and `index.astro` copies until marketing page is verified; use git branches for major changes.
+4. **Links & Embeds**:
+   - URL unfurling (preview cards)
+   - YouTube embeds
+   - Google Docs links
+   - Figma embeds
 
-Step J — Risk, mitigation, and testing plan
-  - Risk: route move breaks bookmarks or external links.
-    - Mitigation: add temporary redirect page at `/` when moving dashboard; or server-level redirects in hosting.
-  - Risk: analytics script loads before consent.
-    - Mitigation: only load vendor script after explicit consent stored in `settingsStore`.
-  - Risk: localStorage quotas exceeded during sample import.
-    - Mitigation: validate size before write and catch `QuotaExceededError` with user message and suggested export.
+**Storage Strategy**:
+```typescript
+// Supabase Storage (1 GB free)
+supabase.storage
+  .from('attachments')
+  .upload(`${userId}/${taskId}/${filename}`, file)
 
-Step K — Post-implementation checklist
-  - [ ] Dashboard visible at `/dashboard` and marketing at `/`.
-  - [ ] Setup flow works and sets `firstRunComplete`.
-  - [ ] Analytics initialize only after consent and track pageviews.
-  - [ ] ARIA attributes added and modal focus trap works.
-  - [ ] `public/og-image.png` exists and OG meta renders correctly.
-  - [ ] Tests added and CI passes.
+// Compression before upload
+async function compressAndUpload(file: File) {
+  if (file.type.startsWith('image/')) {
+    const compressed = await imageCompression(file, {
+      maxSizeMB: 1,
+      maxWidthOrHeight: 1920
+    })
+    return upload(compressed)
+  }
+  return upload(file)
+}
+```
 
-Estimated effort (rough)
------------------------
-- Add route constants + replace hard-coded routes: 1–2 hours
-- Add marketing index page: 1–3 hours (content dependent)
-- Add setup page + island: 3–6 hours
-- Move dashboard + test: 1–2 hours
-- Analytics initializer + consent banner: 2–4 hours (depends on provider)
-- Accessibility improvements (modal, ARIA): 2–4 hours
-- Tests + CI: 3–6 hours
+**Markdown Editor**:
+```typescript
+// Use existing library
+import { MDXEditor } from '@mdxeditor/editor'
+// Or simpler: react-markdown + CodeMirror
+```
 
-Files to create or modify (consolidated)
-------------------------------------
-- Add: `improvements.txt` (this file)
-- Add/modify: `src/lib/config/routes.ts`
-- Add: `src/pages/index.astro` (marketing) or update existing
-- Add: `src/pages/setup.astro`
-- Add: `src/components/islands/SetupIsland.tsx`
-- Add/copy: `src/pages/dashboard.astro` (copy of current `index.astro`)
-- Add: `src/lib/analytics/init.ts`
-- Add: `src/components/islands/AnalyticsConsent.tsx`
-- Add: `public/og-image.png` (asset)
-- Modify: `src/components/astro/Sidebar.astro` and `src/components/astro/Header.astro` (use routes constant, ARIA attrs)
-- Modify: `src/components/ui/Modal.tsx` (focus trap + aria)
-- Add tests: `tests/*.test.ts` and `.github/workflows/ci.yml`
+---
 
-Rollback and backup recommendations
----------------------------------
-- Before renaming `src/pages/index.astro`, copy it to `src/pages/dashboard.astro` and commit the copy. Keep original until new index is verified.
-- Use a feature branch: `feature/landing-setup-analytics` for all changes and open a PR for review before merging.
+### 10. **Advanced Search & Filters**
+**User Value**: Find anything instantly, even with thousands of tasks
 
-Follow-up questions (pick one or more so I can prepare patches):
-1) Should the Dashboard remain reachable at `/` for now or do you want it moved to `/dashboard` immediately? (If moving, I will prepare patches to move and update nav.)
-2) Which analytics provider do you prefer (Plausible, Google Analytics, PostHog, Matomo, or other)?
-3) Should onboarding be mandatory on first-run (automatic redirect to `/setup`) or optional (accessible from marketing page / header)?
+**Search Features**:
 
-End of improvements.txt
+1. **Full-Text Search**:
+   - Instant results (< 50ms)
+   - Search titles, descriptions, notes, tags
+   - Fuzzy matching for typos
+   - Highlight matches
+   - Search history
+
+2. **Advanced Filters**:
+   - Combine multiple criteria:
+     - Subject/Category
+     - Priority level
+     - Status (todo, in progress, completed)
+     - Date range (due, created, completed)
+     - Tags (multi-select)
+     - Has attachments
+     - Time estimate (< 30min, 30-60min, 1-2h, 2h+)
+   
+3. **Smart Collections**:
+   - **Focus**: Due today/tomorrow + high/urgent priority
+   - **Quick Wins**: < 30 min + not started
+   - **Overdue**: Past due date
+   - **Unplanned**: No due date + not completed
+   - **This Week**: Due within 7 days
+   - Custom saved filters
+
+4. **Natural Language Search**:
+   - "overdue math homework"
+   - "urgent tasks due this week"
+   - "completed yesterday"
+   - "unfinished projects"
+
+**Search Implementation**:
+```typescript
+// Local search index (Fuse.js)
+import Fuse from 'fuse.js'
+
+const fuse = new Fuse(tasks, {
+  keys: ['title', 'description', 'tags', 'subject.name'],
+  threshold: 0.3, // Fuzzy matching sensitivity
+  includeScore: true,
+  useExtendedSearch: true
+})
+
+// Search with filters
+const results = fuse.search({
+  $and: [
+    { title: searchQuery },
+    { priority: 'high' },
+    { status: { $ne: 'completed' } }
+  ]
+})
+```
+
+**UI Components**:
+```typescript
+// Command palette (Cmd+K)
+src/components/islands/CommandPalette.tsx
+
+// Saved filters
+src/components/islands/FilterManager.tsx
+
+// Search results
+src/components/islands/SearchResults.tsx
+```
+
+---
+
+### 11. **Keyboard Shortcuts & Command Palette**
+**User Value**: Power user efficiency, accessibility
+
+**Global Shortcuts**:
+- `Cmd/Ctrl + K`: Open command palette
+- `C`: Create new task
+- `T`: Start/stop Pomodoro timer
+- `/`: Focus search
+- `?`: Show keyboard shortcuts
+- `Esc`: Close modal/palette
+
+**Command Palette**:
+```typescript
+// Actions available
+- "Create task" → Opens task form
+- "Start timer" → Starts Pomodoro for selected task
+- "View analytics" → Navigate to analytics
+- "Toggle dark mode" → Theme switch
+- "Export data" → Download backup
+- Go to [page] → Quick navigation
+
+// Search
+- Tasks: Fuzzy search by title
+- Filters: Quick filter application
+- Settings: Jump to specific setting
+```
+
+**Context Actions** (when task selected):
+- `E`: Edit task
+- `D`: Delete task
+- `Space`: Toggle complete
+- `P`: Set priority
+- `T`: Start timer
+- `Enter`: View details
+
+**Implementation**:
+```typescript
+// Use cmdk library
+import { Command } from 'cmdk'
+
+<Command.Dialog>
+  <Command.Input placeholder="Type a command..." />
+  <Command.List>
+    <Command.Group heading="Tasks">
+      <Command.Item onSelect={createTask}>
+        Create new task
+      </Command.Item>
+    </Command.Group>
+    <Command.Group heading="Navigation">
+      <Command.Item onSelect={() => navigate('/dashboard')}>
+        Go to Dashboard
+      </Command.Item>
+    </Command.Group>
+  </Command.List>
+</Command.Dialog>
+```
+
+---
+
+### 12. **Gamification & Motivation**
+**User Value**: Stay motivated, celebrate wins, build habits
+
+**Achievement System**:
+```typescript
+interface Achievement {
+  id: string
+  name: string
+  description: string
+  icon: string
+  rarity: 'common' | 'rare' | 'epic' | 'legendary'
+  unlockedAt?: Date
+  progress: {
+    current: number
+    target: number
+  }
+}
+
+// Examples:
+- "First Steps" - Create your first task
+- "Getting Started" - Complete 5 tasks
+- "Week Warrior" - 7-day completion streak
+- "Marathon Runner" - Complete 50 Pomodoro sessions
+- "Time Master" - Log 100 hours of work
+- "Perfectionist" - Complete 20 tasks in one day
+- "Night Owl" - Complete tasks after 10 PM (10 times)
+- "Early Bird" - Complete tasks before 8 AM (10 times)
+- "Category King" - Complete 100 tasks in one subject
+- "Estimate Expert" - 90% time estimation accuracy (20 tasks)
+```
+
+**Progress System**:
+```typescript
+interface UserProgress {
+  level: number
+  currentXP: number
+  nextLevelXP: number
+  totalXP: number
+  achievements: Achievement[]
+  stats: {
+    tasksCompleted: number
+    pomodorosCompleted: number
+    currentStreak: number
+    longestStreak: number
+    totalWorkMinutes: number
+    perfectDays: number // All tasks completed
+  }
+}
+
+// XP formula
+function calculateXP(task: Task): number {
+  let xp = 10 // Base XP
+  
+  // Priority multipliers
+  if (task.priority === 'urgent') xp *= 2
+  if (task.priority === 'high') xp *= 1.5
+  
+  // Time-based bonus
+  if (task.estimatedMinutes > 120) xp += 20 // Long task bonus
+  
+  // Streak bonus
+  if (currentStreak > 7) xp *= 1.2
+  
+  // On-time bonus
+  if (completedBeforeDue) xp += 5
+  
+  return Math.floor(xp)
+}
+```
+
+**Visual Feedback**:
+- Level-up animation with confetti (canvas-confetti)
+- Achievement toast notifications
+- Progress bar in header/sidebar
+- Celebratory sounds (optional, toggle)
+- Milestone modals (100 tasks, 30-day streak)
+
+**Contribution Calendar**:
+```typescript
+// GitHub-style activity heatmap
+src/components/islands/ContributionCalendar.tsx
+
+// Shows:
+- Daily task completions (color intensity)
+- Pomodoro sessions
+- Streaks highlighted
+- Hover for details
+- Click to see daily breakdown
+```
+
+**Leaderboard** (Optional with Supabase):
+- Anonymous global rankings
+- Weekly challenges ("Most Pomodoros this week")
+- Opt-in only (privacy-conscious)
+- No personal data shared
+
+---
+
+
+
+### 14. **Spotify/Music Integration**
+**User Value**: Seamless focus sessions with music
+
+**Features**:
+
+1. **Embedded Player**:
+   - Spotify Web Playback SDK
+   - Play/pause from Pomodoro timer
+   - Auto-pause during breaks
+   - Resume on work session start
+
+2. **Smart Playlists**:
+   - Task difficulty → playlist intensity
+   - Focus mode playlists (lo-fi, classical, ambient)
+   - Break time playlists (upbeat, energizing)
+   - User-created associations
+
+3. **YouTube Alternative**:
+   - Embed YouTube videos/playlists
+   - "Study with me" videos
+   - Ambient sounds (rain, café, library)
+   - No external dependencies (uses iframe)
+
+**Implementation**:
+```typescript
+// Spotify integration
+src/lib/integrations/spotify.ts
+
+interface MusicSettings {
+  provider: 'spotify' | 'youtube' | 'none'
+  autoPlay: boolean
+  pauseOnBreak: boolean
+  defaultPlaylist?: string
+  volumeLevel: number
+}
+
+// Spotify Web Playback SDK
+const player = new Spotify.Player({
+  name: 'Task Tracker',
+  getOAuthToken: cb => cb(userToken)
+})
+
+player.connect()
+
+// Control from Pomodoro
+function onWorkSessionStart() {
+  if (musicSettings.autoPlay) {
+    player.resume()
+  }
+}
+
+function onBreakStart() {
+  if (musicSettings.pauseOnBreak) {
+    player.pause()
+  }
+}
+```
+
+**Privacy**:
+- Optional feature (disabled by default)
+- Users authenticate with Spotify (OAuth)
+- No tracking, just playback control
+
+---
+
+## 🏗️ Tier 2: Quality & Performance
+
+### 15. **Performance Optimization**
+**User Value**: Blazing fast, works on slow devices
+
+**Targets** (Lighthouse):
+- Performance: > 95
+- Accessibility: 100
+- Best Practices: 100
+- SEO: 100
+- Time to Interactive: < 1.5s
+- First Contentful Paint: < 1s
+
+**Optimizations**:
+
+1. **Code Splitting**:
+   ```typescript
+   // Astro automatic splitting
+   // Lazy load islands
+   import Dashboard from '../islands/Dashboard'
+   <Dashboard client:visible />
+   
+   // Route-based splitting
+   const Analytics = lazy(() => import('../islands/Analytics'))
+   ```
+
+2. **Image Optimization**:
+   - WebP with PNG fallback
+   - Lazy loading (native `loading="lazy"`)
+   - Responsive images (srcset)
+   - Blur-up placeholders
+
+3. **Virtual Scrolling**:
+   ```typescript
+   // For large task lists (1000+ items)
+   import { useVirtualizer } from '@tanstack/react-virtual'
+   
+   const virtualizer = useVirtualizer({
+     count: tasks.length,
+     getScrollElement: () => parentRef.current,
+     estimateSize: () => 72, // Task height
+   })
+   ```
+
+4. **Data Optimization**:
+   - IndexedDB for large datasets (> 5 MB)
+   - Compress localStorage data (lz-string)
+   - Incremental saves (debounce 500ms)
+   - Pagination (50 tasks per page)
+
+5. **Network Optimization**:
+   - Cloudflare Pages edge caching
+   - Preload critical resources
+   - DNS prefetch for external APIs
+   - Service Worker caching strategy
+
+6. **Bundle Size**:
+   - Code splitting by route
+   - Tree shaking (Vite built-in)
+   - Remove unused dependencies
+   - Target: < 150 KB initial bundle
+
+**Monitoring**:
+```typescript
+// Performance metrics
+if (typeof window !== 'undefined') {
+  window.addEventListener('load', () => {
+    const perfData = window.performance.timing
+    const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart
+    console.log('Page load time:', pageLoadTime)
+  })
+}
+```
+
+---
+
+### 16. **Testing Strategy**
+**User Value**: Reliability, fewer bugs, faster shipping
+
+**Test Pyramid**:
+```
+    /\
+   /E2E\      10% - Critical user flows
+  /------\
+ /Integration\ 20% - Component interactions
+/------------\
+/   Unit Tests  \ 70% - Business logic
+```
+
+**Unit Tests** (Vitest):
+```typescript
+// tests/lib/analytics/compute.test.ts
+import { describe, it, expect } from 'vitest'
+import { calculateCompletionRate } from '@/lib/analytics/compute'
+
+describe('Analytics Computations', () => {
+  it('calculates completion rate correctly', () => {
+    const tasks = [
+      { status: 'completed' },
+      { status: 'completed' },
+      { status: 'todo' },
+      { status: 'in_progress' }
+    ]
+    
+    expect(calculateCompletionRate(tasks)).toBe(0.5) // 50%
+  })
+  
+  it('handles empty task list', () => {
+    expect(calculateCompletionRate([])).toBe(0)
+  })
+})
+```
+
+**Integration Tests** (Testing Library):
+```typescript
+// tests/components/TaskForm.test.tsx
+import { render, screen, fireEvent } from '@testing-library/react'
+import { TaskForm } from '@/components/islands/TaskForm'
+
+it('creates task with correct data', async () => {
+  render(<TaskForm />)
+  
+  fireEvent.change(screen.getByLabelText('Title'), {
+    target: { value: 'Test Task' }
+  })
+  
+  fireEvent.click(screen.getByText('Create Task'))
+  
+  await screen.findByText('Task created successfully')
+})
+```
+
+**E2E Tests** (Playwright):
+```typescript
+// e2e/critical-flows.spec.ts
+import { test, expect } from '@playwright/test'
+
+test('complete task workflow', async ({ page }) => {
+  await page.goto('/')
+  
+  // Create task
+  await page.click('text=Add Task')
+  await page.fill('input[name="title"]', 'E2E Test Task')
+  await page.click('button:has-text("Create")')
+  
+  // Verify task appears
+  await expect(page.locator('text=E2E Test Task')).toBeVisible()
+  
+  // Complete task
+  await page.click('[data-testid="task-checkbox"]')
+  
+  // Verify completion
+  await expect(page.locator('.task-completed')).toBeVisible()
+})
+```
+
+**CI/CD Pipeline**:
+```yaml
+# .github/workflows/ci.yml
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Lint
+        run: npm run lint
+      
+      - name: Type check
+        run: npx astro check
+      
+      - name: Unit tests
+        run: npm test
+      
+      - name: Build
+        run: npm run build
+      
+      - name: E2E tests
+        run: npm run test:e2e
+      
+      - name: Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v9
+        with:
+          urls: https://preview-url.com
+          budgetPath: ./lighthouserc.json
+```
+
+**Coverage Targets**:
+- Unit tests: 80% coverage
+- Integration tests: Key user flows
+- E2E tests: Critical paths
+- Visual regression: Chromatic
+
+---
+
+### 17. **Accessibility (WCAG 2.1 AA)**
+**User Value**: Usable by everyone, including screen readers, keyboard-only users
+
+**Requirements**:
+
+1. **Keyboard Navigation**:
+   - All interactive elements focusable
+   - Visible focus indicators
+   - Logical tab order
+   - Skip links ("Skip to content")
+   - Arrow key navigation in lists
+
+2. **Screen Reader Support**:
+   - Semantic HTML (`<nav>`, `<main>`, `<article>`)
+   - ARIA labels where needed
+   - Live regions for dynamic content
+   - Descriptive button labels
+   - Alt text for images
+
+3. **Visual Accessibility**:
+   - Color contrast > 4.5:1 (text)
+   - Color contrast > 3:1 (UI components)
+   - Focus indicators (2px outline)
+   - No information by color alone
+   - Resizable text (up to 200%)
+
+4. **Motion & Animations**:
+   - Respect `prefers-reduced-motion`
+   - Disable auto-play
+   - Pause controls for timers
+   - No flashing content (< 3 flashes/sec)
+
+**Implementation Examples**:
+```tsx
+// Modal with proper ARIA
+<Modal
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="modal-title"
+  aria-describedby="modal-description"
+>
+  <h2 id="modal-title">Edit Task</h2>
+  <p id="modal-description">Update task details below</p>
+  {/* Focus trap implemented */}
+</Modal>
+
+// Live region for notifications
+<div
+  role="status"
+  aria-live="polite"
+  aria-atomic="true"
+>
+  {notification}
+</div>
+
+// Reduced motion
+const prefersReducedMotion = window.matchMedia(
+  '(prefers-reduced-motion: reduce)'
+).matches
+
+const animationVariants = {
+  enter: prefersReducedMotion 
+    ? { opacity: 1 } 
+    : { opacity: 1, y: 0 }
+}
+```
+
+**Testing**:
+- Automated: axe-core in CI
+- Manual: Screen reader testing (NVDA, JAWS, VoiceOver)
+- Keyboard-only navigation audit
+- Color contrast checker
+
+---
+
+### 18. **Security & Privacy**
+**User Value**: Trust, data protection, compliance
+
+**Security Measures**:
+
+1. **Data Protection**:
+   - End-to-end encryption (cloud sync)
+   - Secure password hashing (bcrypt/Argon2)
+   - XSS protection (DOMPurify for user content)
+   - CSRF tokens (Supabase handles)
+   - SQL injection prevention (Supabase parameterized queries)
+
+2. **Authentication**:
+   - Magic links (passwordless)
+   - OAuth (Google, GitHub)
+   - 2FA support (TOTP)
+   - Session management (httpOnly cookies)
+   - Rate limiting (Supabase built-in)
+
+3. **Content Security**:
+   ```typescript
+   // DOMPurify for user content
+   import DOMPurify from 'dompurify'
+   
+   function sanitizeUserContent(html: string) {
+     return DOMPurify.sanitize(html, {
+       ALLOWED_TAGS: ['b', 'i', 'u', 'a', 'p', 'br'],
+       ALLOWED_ATTR: ['href']
+     })
+   }
+   ```
+
+4. **API Key Protection**:
+   ```typescript
+   // Never expose in client code
+   // Use Supabase Edge Functions for API calls
+   
+   // supabase/functions/secure-proxy/index.ts
+   // Example: proxy sensitive operations (email sending, webhook calls) from the edge
+   Deno.serve(async (req) => {
+     const payload = await req.json()
+
+     // Example: Send transactional email via SendGrid (API key stored in env)
+     await fetch('https://api.sendgrid.com/v3/mail/send', {
+       method: 'POST',
+       headers: {
+         'Authorization': `Bearer ${Deno.env.get('SENDGRID_API_KEY')}`,
+         'Content-Type': 'application/json'
+       },
+       body: JSON.stringify({ /* formatted email payload using payload */ })
+     })
+
+     return new Response(JSON.stringify({ status: 'ok' }), { status: 200 })
+   })
+   ```
+
+**Privacy Policy**:
+```markdown
+# Privacy Policy
+
+## Data Collection
+- We collect only what you explicitly provide (tasks, notes)
+- Optional: Email for magic link authentication
+- No third-party tracking or analytics
+- No sale of user data
+
+## Data Storage
+- Primary: Local browser storage (localStorage/IndexedDB)
+- Optional: Encrypted cloud backup (Supabase)
+- Attachments: Encrypted file storage
+
+## Data Sharing
+- We never share your data with third parties
+- Data is not used for advertising
+- Open source: Audit our code
+
+## Your Rights
+- Export all data (JSON format)
+- Delete account and all data
+- Opt-out of any feature
+- Request data audit
+
+## Security
+- End-to-end encryption for cloud sync
+- Regular security audits
+- Responsible disclosure program
+```
+
+---
+
+### 19. **Error Handling & Monitoring**
+**User Value**: Graceful failures, quick bug fixes
+
+**Error Boundaries**:
+```typescript
+// src/components/ErrorBoundary.tsx
+class ErrorBoundary extends React.Component {
+  state = { hasError: false, error: null }
+  
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error }
+  }
+  
+  componentDidCatch(error, errorInfo) {
+    // Log to console in dev
+    console.error(error, errorInfo)
+    
+    // Optional: Send to error tracking in production
+    if (import.meta.env.PROD) {
+      reportError(error, errorInfo)
+    }
+  }
+  
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="error-fallback">
+          <h2>Something went wrong</h2>
+          <p>Please refresh the page or contact support.</p>
+          <button onClick={() => window.location.reload()}>
+            Reload
+          </button>
+        </div>
+      )
+    }
+    
+    return this.props.children
+  }
+}
+```
+
+**Toast Notifications**:
+```typescript
+// Friendly error messages
+showToast({
+  type: 'error',
+  title: 'Failed to save task',
+  message: 'Check your connection and try again',
+  action: {
+    label: 'Retry',
+    onClick: retryOperation
+  }
+})
+```
+
+**Monitoring** (Optional, Privacy-Conscious):
+```typescript
+// Self-hosted Sentry alternative: GlitchTip
+// Or use browser console errors only
+
+window.addEventListener('error', (event) => {
+  if (import.meta.env.PROD) {
+    // Log errors (self-hosted)
+    logError({
+      message: event.message,
+      stack: event.error?.stack,
+      url: window.location.href,
+      timestamp: new Date().toISOString()
+    })
+  }
+})
+```
+
+---
+
+### 20. **Internationalization (i18n)**
+**User Value**: Use app in your native language
+
+**Phase 1 Languages**:
+- English (default)
+- Spanish
+- French
+- German
+- Portuguese
+
+**Phase 2**:
+- Mandarin
+- Japanese
+- Korean
+- Hindi
+- Arabic
+
+**Implementation**:
+```typescript
+// src/lib/i18n/index.ts
+import i18next from 'i18next'
+import { initReactI18next } from 'react-i18next'
+
+import en from './locales/en.json'
+import es from './locales/es.json'
+
+i18next
+  .use(initReactI18next)
+  .init({
+    resources: {
+      en: { translation: en },
+      es: { translation: es }
+    },
+    lng: 'en',
+    fallbackLng: 'en',
+    interpolation: {
+      escapeValue: false
+    }
+  })
+
+// Usage
+import { useTranslation } from 'react-i18next'
+
+function Dashboard() {
+  const { t } = useTranslation()
+  
+  return (
+    <h1>{t('dashboard.title')}</h1>
+  )
+}
+```
+
+**Translation Files**:
+```json
+// src/lib/i18n/locales/en.json
+{
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back!",
+    "tasks_due_today": "{{count}} tasks due today"
+  },
+  "task": {
+    "create": "Create Task",
+    "edit": "Edit Task",
+    "delete": "Delete Task",
+    "complete": "Complete"
+  }
+}
+```
+
+**RTL Support** (Arabic, Hebrew):
+```css
+[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+```
+
+---
+
+## 📋 Implementation Roadmap
+
+### Phase 1: Core Features (Q1 2025)
+**Goal**: Production-ready MVP
+
+**Month 1**:
+- [ ] Pomodoro Timer (basic + advanced)
+- [ ] Planning Page (task breakdown UI)
+- [ ] Natural language parsing
+- [ ] Session tracking & analytics
+
+**Month 2**:
+- [ ] Smart Assistant (local heuristics & templates)
+- [ ] Smart notifications
+- [ ] Command palette
+- [ ] Keyboard shortcuts
+
+**Month 3**:
+- [ ] Advanced analytics dashboard
+- [ ] Insights engine
+- [ ] Contribution calendar
+- [ ] Achievement system
+
+---
+
+### Phase 2: Cloud & Collaboration (Q2 2025)
+**Goal**: Multi-device, social features
+
+**Month 1**:
+- [ ] Supabase integration
+- [ ] Cloud sync (encrypted)
+- [ ] Authentication (magic links, OAuth)
+- [ ] Multi-device support
+
+**Month 2**:
+- [ ] Collaborative workspaces
+- [ ] Real-time sync
+- [ ] Sharing features
+- [ ] Comments & activity feed
+
+**Month 3**:
+- [ ] PWA enhancements
+- [ ] Install prompts
+- [ ] Offline mode
+- [ ] Push notifications
+
+---
+
+### Phase 3: Polish & Scale (Q3 2025)
+**Goal**: World-class UX
+
+**Month 1**:
+- [ ] Rich content editor
+- [ ] File attachments
+- [ ] Voice notes
+- [ ] Embeds
+
+**Month 2**:
+- [ ] Advanced search
+- [ ] Smart filters
+- [ ] Saved collections
+- [ ] Bulk actions
+
+**Month 3**:
+- [ ] Performance optimization
+- [ ] IndexedDB migration
+- [ ] Virtual scrolling
+- [ ] Bundle size reduction
+
+---
+
+### Phase 4: Growth & Refinement (Q4 2025)
+**Goal**: Community building
+
+**Month 1**:
+- [ ] Internationalization
+- [ ] 5 languages
+- [ ] RTL support
+- [ ] Localized content
+
+**Month 2**:
+- [ ] Deadline negotiator
+- [ ] Spotify integration
+- [ ] Music controls
+- [ ] Focus mode
+
+**Month 3**:
+- [ ] Testing (80% coverage)
+- [ ] E2E test suite
+- [ ] Accessibility audit
+- [ ] Performance monitoring
+
+---
+
+## 🎯 Success Metrics
+
+### User Engagement
+- **DAU/MAU**: Target 40% (daily/monthly active users)
+- **Session Duration**: Average 15+ minutes
+- **Task Completion Rate**: 70% of created tasks completed
+- **Feature Adoption**: 50% use Pomodoro within 7 days
+- **Retention**: 60% Day 7, 40% Day 30, 25% Day 90
+
+### Product Quality
+- **Lighthouse Score**: 95+ across all categories
+- **Time to Interactive**: < 1.5s
+- **Bug Rate**: < 5 critical bugs/month
+- **Uptime**: 99.9% (Cloudflare Pages)
+- **User Satisfaction**: NPS > 50
+
+### Growth
+- **Word of Mouth**: 30% of signups from referrals
+- **GitHub Stars**: 1,000+ in first year
+- **Community**: Active Discord with 500+ members
+- **Contributions**: 50+ external contributors
+
+---
+
+## 💡 Additional Feature Ideas
+
+### Quick Wins (Low effort, high impact):
+1. **Dark/Light/Auto Theme Toggle** (already have)
+2. **Task Templates** ("Weekly Review", "Project Kickoff")
+3. **Recurring Tasks** (Daily standup, Weekly review)
+4. **Task Dependencies** (Can't start B until A is done)
+5. **Subtasks** (Break down complex tasks)
+6. **Tags** (Flexible categorization beyond subjects)
+7. **Task Notes** (Rich text,
