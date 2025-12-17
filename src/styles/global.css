@@ -155,3 +155,32 @@
     @apply bg-gradient-to-r from-brand-primary to-brand-secondary bg-clip-text text-transparent;
   }
 }
+
+/* Command Palette (cmdk) styles */
+[cmdk-root] {
+  @apply w-full;
+}
+
+[cmdk-input] {
+  @apply w-full;
+}
+
+[cmdk-list] {
+  @apply w-full;
+}
+
+[cmdk-item] {
+  @apply outline-none;
+}
+
+[cmdk-item][data-selected="true"] {
+  @apply bg-indigo-50 dark:bg-indigo-900/20;
+}
+
+[cmdk-group-heading] {
+  @apply text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase px-2 py-1.5;
+}
+
+[cmdk-empty] {
+  @apply py-6 text-center text-sm text-gray-500;
+}

@@ -2,6 +2,7 @@
 import MainLayout from './MainLayout.astro';
 import Header from '../components/astro/Header.astro';
 import Sidebar from '../components/astro/Sidebar.astro';
+import { CommandPalette } from '../components/islands/CommandPalette';
 
 export interface Props {
   title?: string;
@@ -28,4 +29,7 @@ const { title, description, activeNav = 'dashboard' } = Astro.props;
       </main>
     </div>
   </div>
+  
+  <!-- Command Palette (available globally with Cmd/Ctrl+K) -->
+  <CommandPalette client:only="react" />
 </MainLayout>
