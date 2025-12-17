@@ -8,7 +8,11 @@ export const ROUTES = {
   calendar: '/calendar',
   tasks: '/tasks',
   subjects: '/subjects',
+  planning: '/planning',
   analytics: '/analytics',
+  achievements: '/achievements',
+  pomodoro: '/pomodoro',
+  search: '/search',
   settings: '/settings',
   setup: '/setup',
 } as const;

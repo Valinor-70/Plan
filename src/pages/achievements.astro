@@ -1,0 +1,19 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+import { AchievementsPanel } from '../components/islands/AchievementsPanel';
+---
+
+<DashboardLayout title="Achievements - Homework Planner" activeNav="achievements">
+  <div class="space-y-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Achievements</h1>
+        <p class="text-gray-600 dark:text-gray-400 mt-1">
+          Track your progress and unlock achievements
+        </p>
+      </div>
+    </div>
+    
+    <AchievementsPanel client:load />
+  </div>
+</DashboardLayout>
