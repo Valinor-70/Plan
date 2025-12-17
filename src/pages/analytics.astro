@@ -1,8 +1,17 @@
 ---
 import DashboardLayout from '../layouts/DashboardLayout.astro';
 import StatsDashboard from '../components/islands/StatsDashboard';
+import { ContributionCalendar } from '../components/islands/ContributionCalendar';
+import { ProductivityHeatmap } from '../components/islands/ProductivityHeatmap';
 ---
 
 <DashboardLayout title="Analytics - Homework Planner" activeNav="analytics">
-  <StatsDashboard client:load />
+  <div class="space-y-6">
+    <StatsDashboard client:load />
+    
+    <div class="grid grid-cols-1 gap-6">
+      <ContributionCalendar client:load />
+      <ProductivityHeatmap client:load />
+    </div>
+  </div>
 </DashboardLayout>
