@@ -15,7 +15,8 @@ import {
   Sun,
   CheckSquare,
   Home,
-  X
+  X,
+  Trophy
 } from 'lucide-react';
 
 interface CommandAction {
@@ -133,6 +134,15 @@ export function CommandPalette() {
       icon: <BarChart2 className="w-4 h-4" />,
       keywords: ['analytics', 'stats', 'insights'],
       action: () => navigate(ROUTES.analytics),
+      section: 'navigation'
+    },
+    {
+      id: 'nav-achievements',
+      label: 'Go to Achievements',
+      description: 'View your achievements and level',
+      icon: <Trophy className="w-4 h-4" />,
+      keywords: ['achievements', 'gamification', 'level', 'xp'],
+      action: () => navigate(ROUTES.achievements),
       section: 'navigation'
     },
     {

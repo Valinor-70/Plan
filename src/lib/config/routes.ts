@@ -9,6 +9,7 @@ export const ROUTES = {
   tasks: '/tasks',
   subjects: '/subjects',
   analytics: '/analytics',
+  achievements: '/achievements',
   pomodoro: '/pomodoro',
   settings: '/settings',
   setup: '/setup',
