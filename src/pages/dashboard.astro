@@ -1,0 +1,8 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+import DashboardIsland from '../components/islands/Dashboard';
+---
+
+<DashboardLayout title="Dashboard - Homework Planner" activeNav="dashboard">
+  <DashboardIsland client:load />
+</DashboardLayout>

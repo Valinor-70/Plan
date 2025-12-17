@@ -86,6 +86,8 @@ export interface UserSettings {
   showCompletedTasks: boolean;
   compactMode: boolean;
   language: string;
+  firstRunComplete?: boolean;
+  analyticsEnabled?: boolean;
 }
 
 // Filter Types

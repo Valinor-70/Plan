@@ -1,8 +1,203 @@
 ---
-import DashboardLayout from '../layouts/DashboardLayout.astro';
-import Dashboard from '../components/islands/Dashboard';
+import MainLayout from '../layouts/MainLayout.astro';
+import { ROUTES } from '../lib/config/routes';
 ---
 
-<DashboardLayout title="Dashboard - Homework Planner" activeNav="dashboard">
-  <Dashboard client:load />
-</DashboardLayout>
+<MainLayout 
+  title="Homework Planner - Plan Smarter, Achieve More" 
+  description="A privacy-first, local-only homework and task planner to manage your academic assignments, deadlines, and study schedule with powerful analytics."
+>
+  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-slate-50 dark:from-slate-950 dark:via-indigo-950 dark:to-slate-950">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-primary to-brand-secondary flex items-center justify-center">
+              <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+            </div>
+            <span class="font-semibold text-xl text-slate-900 dark:text-white">Homework Planner</span>
+          </div>
+          <div class="flex items-center gap-4">
+            <a 
+              href={ROUTES.dashboard} 
+              class="hidden sm:inline-flex px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-brand-primary dark:hover:text-brand-primary transition-colors"
+            >
+              Open Dashboard
+            </a>
+            <a 
+              href={ROUTES.setup} 
+              class="inline-flex px-4 py-2 bg-brand-primary text-white text-sm font-medium rounded-lg hover:bg-indigo-600 active:scale-[0.98] transition-all"
+            >
+              Get Started
+            </a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center max-w-3xl mx-auto">
+          <h1 class="text-5xl sm:text-6xl lg:text-7xl font-bold text-slate-900 dark:text-white mb-6 leading-tight">
+            Plan Smarter,
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-brand-secondary">
+              Achieve More
+            </span>
+          </h1>
+          <p class="text-xl sm:text-2xl text-slate-600 dark:text-slate-300 mb-10">
+            A privacy-first homework planner that keeps your academic life organized—completely local, no cloud required.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a 
+              href={ROUTES.setup}
+              class="inline-flex items-center justify-center px-8 py-4 bg-brand-primary text-white text-lg font-semibold rounded-xl hover:bg-indigo-600 active:scale-[0.98] transition-all shadow-lg shadow-indigo-500/30"
+            >
+              Get Started Free
+              <svg class="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </a>
+            <a 
+              href={ROUTES.dashboard}
+              class="inline-flex items-center justify-center px-8 py-4 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-lg font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-[0.98] transition-all border-2 border-slate-200 dark:border-slate-700"
+            >
+              Open Dashboard
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-20 px-4 sm:px-6 lg:px-8 bg-white/50 dark:bg-slate-900/50">
+      <div class="max-w-7xl mx-auto">
+        <h2 class="text-3xl sm:text-4xl font-bold text-center text-slate-900 dark:text-white mb-16">
+          Everything You Need to Stay on Track
+        </h2>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <!-- Privacy Feature -->
+          <div class="p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
+            <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center mb-4">
+              <svg class="w-6 h-6 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-slate-900 dark:text-white mb-2">Privacy First</h3>
+            <p class="text-slate-600 dark:text-slate-400">
+              All your data stays on your device. No servers, no tracking, no cloud storage required.
+            </p>
+          </div>
+
+          <!-- Analytics Feature -->
+          <div class="p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
+            <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center mb-4">
+              <svg class="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-slate-900 dark:text-white mb-2">Smart Analytics</h3>
+            <p class="text-slate-600 dark:text-slate-400">
+              Track completion rates, velocity, and productivity with built-in insights and visualizations.
+            </p>
+          </div>
+
+          <!-- Calendar Feature -->
+          <div class="p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
+            <div class="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center mb-4">
+              <svg class="w-6 h-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-slate-900 dark:text-white mb-2">Calendar Integration</h3>
+            <p class="text-slate-600 dark:text-slate-400">
+              Visualize deadlines, track recurring tasks, and never miss an assignment.
+            </p>
+          </div>
+
+          <!-- Subject Management Feature -->
+          <div class="p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
+            <div class="w-12 h-12 bg-violet-100 dark:bg-violet-900/30 rounded-xl flex items-center justify-center mb-4">
+              <svg class="w-6 h-6 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-slate-900 dark:text-white mb-2">Subject Management</h3>
+            <p class="text-slate-600 dark:text-slate-400">
+              Organize tasks by subject with custom colors and performance tracking.
+            </p>
+          </div>
+
+          <!-- Reminders Feature -->
+          <div class="p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
+            <div class="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 rounded-xl flex items-center justify-center mb-4">
+              <svg class="w-6 h-6 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-slate-900 dark:text-white mb-2">Smart Reminders</h3>
+            <p class="text-slate-600 dark:text-slate-400">
+              Set custom reminders and never miss a deadline.
+            </p>
+          </div>
+
+          <!-- Export Feature -->
+          <div class="p-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
+            <div class="w-12 h-12 bg-cyan-100 dark:bg-cyan-900/30 rounded-xl flex items-center justify-center mb-4">
+              <svg class="w-6 h-6 text-cyan-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-slate-900 dark:text-white mb-2">Export & Backup</h3>
+            <p class="text-slate-600 dark:text-slate-400">
+              Export your data anytime. Your data, your control.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-4xl mx-auto text-center">
+        <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-6">
+          Ready to Take Control of Your Studies?
+        </h2>
+        <p class="text-xl text-slate-600 dark:text-slate-300 mb-10">
+          Start planning smarter today. No account required, completely free.
+        </p>
+        <a 
+          href={ROUTES.setup}
+          class="inline-flex items-center justify-center px-8 py-4 bg-brand-primary text-white text-lg font-semibold rounded-xl hover:bg-indigo-600 active:scale-[0.98] transition-all shadow-lg shadow-indigo-500/30"
+        >
+          Get Started Now
+          <svg class="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+        </a>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 px-4 sm:px-6 lg:px-8 border-t border-slate-200 dark:border-slate-800">
+      <div class="max-w-7xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-primary to-brand-secondary flex items-center justify-center">
+              <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+            </div>
+            <span class="font-semibold text-slate-900 dark:text-white">Homework Planner</span>
+          </div>
+          <p class="text-sm text-slate-600 dark:text-slate-400">
+            © 2025 Homework Planner. Privacy-first, locally-powered planning.
+          </p>
+        </div>
+      </div>
+    </footer>
+  </div>
+</MainLayout>

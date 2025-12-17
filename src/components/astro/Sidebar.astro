@@ -1,4 +1,6 @@
 ---
+import { ROUTES } from '../../lib/config/routes';
+
 export interface Props {
   activeNav?: string;
 }
@@ -6,18 +8,18 @@ export interface Props {
 const { activeNav = 'dashboard' } = Astro.props;
 
 const navItems = [
-  { id: 'dashboard', label: 'Dashboard', href: '/', icon: 'home' },
-  { id: 'calendar', label: 'Calendar', href: '/calendar', icon: 'calendar' },
-  { id: 'subjects', label: 'Subjects', href: '/subjects', icon: 'book-open' },
-  { id: 'analytics', label: 'Analytics', href: '/analytics', icon: 'bar-chart-2' },
-  { id: 'settings', label: 'Settings', href: '/settings', icon: 'settings' },
+  { id: 'dashboard', label: 'Dashboard', href: ROUTES.dashboard, icon: 'home' },
+  { id: 'calendar', label: 'Calendar', href: ROUTES.calendar, icon: 'calendar' },
+  { id: 'subjects', label: 'Subjects', href: ROUTES.subjects, icon: 'book-open' },
+  { id: 'analytics', label: 'Analytics', href: ROUTES.analytics, icon: 'bar-chart-2' },
+  { id: 'settings', label: 'Settings', href: ROUTES.settings, icon: 'settings' },
 ];
 ---
 
 <aside class="hidden lg:flex lg:flex-col w-64 bg-surface-light dark:bg-surface-dark border-r border-border-light dark:border-border-dark">
   <!-- Logo -->
   <div class="h-16 flex items-center px-6 border-b border-border-light dark:border-border-dark">
-    <a href="/" class="flex items-center gap-3" aria-label="Homework Planner Home">
+    <a href={ROUTES.home} class="flex items-center gap-3" aria-label="Homework Planner Home">
       <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-primary to-brand-secondary flex items-center justify-center">
         <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
@@ -30,7 +32,7 @@ const navItems = [
   </div>
   
   <!-- Navigation -->
-  <nav class="flex-1 px-4 py-6 space-y-1" aria-label="Main navigation">
+  <nav class="flex-1 px-4 py-6 space-y-1" aria-label="Main navigation" role="navigation">
     {navItems.map((item) => {
       const isActive = activeNav === item.id;
       return (
@@ -43,6 +45,7 @@ const navItems = [
               : 'text-text-secondary hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-text-primary-light dark:hover:text-text-primary-dark'
           ]}
           aria-current={isActive ? 'page' : undefined}
+          role="menuitem"
         >
           <span class="w-5 h-5" aria-hidden="true">
             {item.icon === 'home' && (

@@ -1,0 +1,72 @@
+{
+  "subjects": [
+    {
+      "id": "sample-math",
+      "name": "Mathematics",
+      "color": "#6366f1",
+      "teacher": "Prof. Johnson",
+      "room": "Room 301",
+      "archived": false,
+      "createdAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "sample-science",
+      "name": "Science",
+      "color": "#10b981",
+      "teacher": "Dr. Smith",
+      "room": "Lab 2",
+      "archived": false,
+      "createdAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "sample-english",
+      "name": "English",
+      "color": "#f59e0b",
+      "teacher": "Ms. Davis",
+      "room": "Room 205",
+      "archived": false,
+      "createdAt": "2025-01-01T00:00:00.000Z"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "sample-task-1",
+      "title": "Complete Math Homework Chapter 5",
+      "description": "Solve problems 1-20 from the textbook",
+      "subjectId": "sample-math",
+      "dueDate": "{{futureDate:3}}",
+      "priority": "high",
+      "status": "todo",
+      "tags": ["homework", "algebra"],
+      "estimatedDuration": 90,
+      "createdAt": "{{now}}",
+      "updatedAt": "{{now}}"
+    },
+    {
+      "id": "sample-task-2",
+      "title": "Science Lab Report",
+      "description": "Write lab report for last week's experiment",
+      "subjectId": "sample-science",
+      "dueDate": "{{futureDate:5}}",
+      "priority": "medium",
+      "status": "in-progress",
+      "tags": ["lab", "report"],
+      "estimatedDuration": 120,
+      "createdAt": "{{now}}",
+      "updatedAt": "{{now}}"
+    },
+    {
+      "id": "sample-task-3",
+      "title": "English Essay Draft",
+      "description": "First draft of persuasive essay on climate change",
+      "subjectId": "sample-english",
+      "dueDate": "{{futureDate:7}}",
+      "priority": "high",
+      "status": "todo",
+      "tags": ["essay", "writing"],
+      "estimatedDuration": 180,
+      "createdAt": "{{now}}",
+      "updatedAt": "{{now}}"
+    }
+  ]
+}

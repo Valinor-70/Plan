@@ -33,6 +33,8 @@ const defaultSettings: UserSettings = {
   showCompletedTasks: true,
   compactMode: false,
   language: 'en',
+  firstRunComplete: false,
+  analyticsEnabled: false,
 };
 
 export const useSettingsStore = create<SettingsStore>()(
