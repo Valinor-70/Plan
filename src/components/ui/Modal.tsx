@@ -1,15 +1,12 @@
-import React, { useEffect, useCallback, useRef } from 'react';
+import React, { useEffect, useCallback, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import type FocusTrapType from 'focus-trap-react';
 import { X } from 'lucide-react';
 import Button from './Button';
 
-// Dynamic import for FocusTrap to avoid SSR issues
-const FocusTrap = (typeof window !== 'undefined'
-  ? require('focus-trap-react').default
-  : ({ children }: { children: React.ReactNode }) => <>{children}</>
-) as typeof FocusTrapType;
+// Fallback component when FocusTrap is not loaded
+const FocusTrapFallback: React.FC<{ children: React.ReactNode }> = ({ children }) => <>{children}</>;
 
 export interface ModalProps {
   open: boolean;
@@ -45,6 +42,19 @@ export const Modal: React.FC<ModalProps> = ({
   showCloseButton = true,
 }) => {
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+  const [FocusTrap, setFocusTrap] = useState<typeof FocusTrapType>(() => FocusTrapFallback as any);
+
+  // Dynamically import FocusTrap only on the client
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      import('focus-trap-react').then((module) => {
+        setFocusTrap(() => module.default as typeof FocusTrapType);
+      }).catch(() => {
+        // Fallback to the simple wrapper if import fails
+        setFocusTrap(() => FocusTrapFallback as any);
+      });
+    }
+  }, []);
 
   const handleEscape = useCallback(
     (event: KeyboardEvent) => {

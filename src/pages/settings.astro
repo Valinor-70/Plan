@@ -66,6 +66,22 @@ import DashboardLayout from '../layouts/DashboardLayout.astro';
         </h2>
         
         <div class="space-y-4">
+          <!-- Analytics Toggle -->
+          <div class="flex items-center justify-between">
+            <div>
+              <label class="block font-medium text-text-primary-light dark:text-text-primary-dark">
+                Enable Analytics
+              </label>
+              <p class="text-sm text-text-secondary">
+                Track your productivity and completion rates
+              </p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="analytics-toggle" class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand-primary/20 dark:peer-focus:ring-brand-primary/20 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-brand-primary"></div>
+            </label>
+          </div>
+          
           <!-- First Day of Week -->
           <div class="flex items-center justify-between">
             <div>
@@ -260,8 +276,40 @@ import DashboardLayout from '../layouts/DashboardLayout.astro';
     updateThemeButtons(theme);
   }
   
+  // Analytics toggle
+  function getAnalyticsEnabled(): boolean {
+    try {
+      const stored = localStorage.getItem('homework-planner-settings');
+      if (stored) {
+        const settings = JSON.parse(stored);
+        return settings.state?.settings?.analyticsEnabled || false;
+      }
+    } catch (e) {}
+    return false;
+  }
+  
+  function setAnalyticsEnabled(enabled: boolean) {
+    try {
+      const stored = localStorage.getItem('homework-planner-settings');
+      const settings = stored ? JSON.parse(stored) : { state: { settings: {} } };
+      settings.state = settings.state || { settings: {} };
+      settings.state.settings = settings.state.settings || {};
+      settings.state.settings.analyticsEnabled = enabled;
+      localStorage.setItem('homework-planner-settings', JSON.stringify(settings));
+    } catch (e) {}
+  }
+  
   // Initialize
   updateThemeButtons(getCurrentTheme());
+  
+  // Initialize analytics toggle
+  const analyticsToggle = document.getElementById('analytics-toggle') as HTMLInputElement;
+  if (analyticsToggle) {
+    analyticsToggle.checked = getAnalyticsEnabled();
+    analyticsToggle.addEventListener('change', () => {
+      setAnalyticsEnabled(analyticsToggle.checked);
+    });
+  }
   
   themeButtons.forEach((btn) => {
     btn.addEventListener('click', () => {
