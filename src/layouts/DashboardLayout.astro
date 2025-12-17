@@ -4,6 +4,7 @@ import Header from '../components/astro/Header.astro';
 import Sidebar from '../components/astro/Sidebar.astro';
 import { CommandPalette } from '../components/islands/CommandPalette';
 import { PWAInstallPrompt } from '../components/islands/PWAInstallPrompt';
+import { ToastContainer } from '../components/islands/ToastContainer';
 
 export interface Props {
   title?: string;
@@ -36,4 +37,7 @@ const { title, description, activeNav = 'dashboard' } = Astro.props;
   
   <!-- PWA Install Prompt -->
   <PWAInstallPrompt client:only="react" />
+  
+  <!-- Toast Notifications -->
+  <ToastContainer client:only="react" />
 </MainLayout>
