@@ -1,12 +1,11 @@
 import { useGamificationStore } from '../../lib/store/gamificationStore';
-import { Trophy, Lock, Star } from 'lucide-react';
+import { Trophy, Star } from 'lucide-react';
 
 export function AchievementsPanel() {
   const { achievements, level, currentXP, nextLevelXP, stats } = useGamificationStore();
 
   const unlockedCount = achievements.filter(a => a.unlockedAt).length;
   const totalCount = achievements.length;
-  const completionRate = Math.round((unlockedCount / totalCount) * 100);
 
   const getRarityColor = (rarity: string) => {
     switch (rarity) {

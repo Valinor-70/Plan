@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { UserProgress, Achievement } from '../types/gamification';
-import { ACHIEVEMENTS, calculateXP, calculateLevel, xpForNextLevel } from '../gamification/achievements';
+import { ACHIEVEMENTS, calculateLevel, xpForNextLevel } from '../gamification/achievements';
 
 interface GamificationState extends UserProgress {
   addXP: (xp: number) => { leveledUp: boolean; newLevel?: number };

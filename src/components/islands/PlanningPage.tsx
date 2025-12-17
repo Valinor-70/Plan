@@ -7,26 +7,22 @@ import {
   ChevronRight,
   Calendar as CalendarIcon,
   Clock,
-  Plus,
   Trash2,
   RefreshCw,
   Settings,
   BarChart3,
 } from 'lucide-react';
-import { format, addDays, startOfWeek, endOfWeek, isSameDay } from 'date-fns';
+import { format, addDays } from 'date-fns';
 
 export function PlanningPage() {
   const {
     selectedDate,
     viewMode,
     distributionStrategy,
-    timeBlocks,
     setSelectedDate,
     setViewMode,
     setDistributionStrategy,
-    addSegment,
     removeSegment,
-    moveSegment,
     distributeTask,
     getSegmentsForDate,
     clearAllSegments,

@@ -1,5 +1,4 @@
-import { format, subDays, startOfWeek, addDays, isSameDay } from 'date-fns';
-import type { Task } from '../../lib/types';
+import { format, subDays, startOfWeek, addDays } from 'date-fns';
 import { useTaskStore } from '../../lib/store/taskStore';
 import { usePomodoroStore } from '../../lib/store/pomodoroStore';
 

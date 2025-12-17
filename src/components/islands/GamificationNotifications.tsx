@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { Trophy, X, Star } from 'lucide-react';
 import type { Achievement } from '../../lib/types/gamification';

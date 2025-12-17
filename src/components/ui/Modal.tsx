@@ -1,7 +1,6 @@
 import React, { useEffect, useCallback, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import type FocusTrapType from 'focus-trap-react';
 import { X } from 'lucide-react';
 import Button from './Button';
 
@@ -9,7 +8,7 @@ import Button from './Button';
 const FocusTrapFallback: React.FC<{ children: React.ReactNode; focusTrapOptions?: any }> = ({ children }) => <>{children}</>;
 
 // Type for the FocusTrap component (loaded or fallback)
-type FocusTrapComponent = typeof FocusTrapType | typeof FocusTrapFallback;
+type FocusTrapComponent = React.FC<{ children: React.ReactNode; focusTrapOptions?: any }>;
 
 export interface ModalProps {
   open: boolean;
@@ -50,12 +49,16 @@ export const Modal: React.FC<ModalProps> = ({
   // Dynamically import FocusTrap only on the client
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      import('focus-trap-react').then((module) => {
-        setFocusTrap(() => module.default);
-      }).catch(() => {
-        // Fallback to the simple wrapper if import fails
-        setFocusTrap(() => FocusTrapFallback);
-      });
+      import('focus-trap-react')
+        .then((module) => {
+          // Use type assertion to avoid deprecation warning
+          const FocusTrapModule = module as { default: React.FC<{ children: React.ReactNode; focusTrapOptions?: any }> };
+          setFocusTrap(() => FocusTrapModule.default);
+        })
+        .catch(() => {
+          // Fallback to the simple wrapper if import fails
+          setFocusTrap(() => FocusTrapFallback);
+        });
     }
   }, []);
 
