@@ -149,3 +149,44 @@ export const SUBJECT_COLORS = [
   '#84cc16', // Lime
   '#a855f7', // Purple
 ] as const;
+
+// Pomodoro Types
+export interface PomodoroSession {
+  id: string;
+  taskId: string | null;
+  type: 'work' | 'shortBreak' | 'longBreak';
+  startTime: Date;
+  endTime: Date;
+  completed: boolean;
+  interrupted: boolean;
+  note?: string;
+}
+
+export interface PomodoroSettings {
+  workDuration: number; // minutes
+  shortBreakDuration: number;
+  longBreakDuration: number;
+  longBreakInterval: number; // Every N sessions
+  autoStartBreaks: boolean;
+  autoStartWork: boolean;
+  soundEnabled: boolean;
+  notificationsEnabled: boolean;
+  volume: number; // 0-100
+}
+
+export interface ActiveSession {
+  taskId: string | null;
+  type: 'work' | 'shortBreak' | 'longBreak';
+  startTime: Date;
+  duration: number; // minutes
+  isPaused: boolean;
+  pausedAt?: Date;
+  totalPausedTime: number; // seconds
+}
+
+export interface TodayStats {
+  workMinutes: number;
+  breakMinutes: number;
+  completedSessions: number;
+  interruptions: number;
+}

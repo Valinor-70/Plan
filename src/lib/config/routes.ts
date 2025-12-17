@@ -9,6 +9,7 @@ export const ROUTES = {
   tasks: '/tasks',
   subjects: '/subjects',
   analytics: '/analytics',
+  pomodoro: '/pomodoro',
   settings: '/settings',
   setup: '/setup',
 } as const;

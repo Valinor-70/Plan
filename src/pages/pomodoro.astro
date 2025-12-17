@@ -1,0 +1,10 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+import { PomodoroTimer } from '../components/islands/PomodoroTimer';
+---
+
+<DashboardLayout title="Pomodoro Timer - Homework Planner" activeNav="pomodoro">
+  <div class="container mx-auto px-4 py-8">
+    <PomodoroTimer client:load />
+  </div>
+</DashboardLayout>
