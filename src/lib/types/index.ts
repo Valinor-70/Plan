@@ -54,6 +54,7 @@ export interface Subject {
   id: string;
   name: string;
   color: string;
+  description?: string;
   icon?: string;
   teacher?: string;
   room?: string;
@@ -88,6 +89,8 @@ export interface UserSettings {
   language: string;
   firstRunComplete?: boolean;
   analyticsEnabled?: boolean;
+  userName?: string;
+  profilePicture?: string;
 }
 
 // Filter Types

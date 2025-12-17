@@ -16,7 +16,6 @@ import type { Task } from '../../lib/types';
 import { Card, CardTitle, CardContent } from '../ui/Card';
 import TaskCard from './TaskCard';
 import TaskForm from './TaskForm';
-import { ToastProvider } from '../ui/Toast';
 
 export const Dashboard: React.FC = () => {
   const { tasks, getTodaysTasks, getUpcomingTasks, getOverdueTasks } = useTaskStore();
@@ -92,17 +91,16 @@ export const Dashboard: React.FC = () => {
   }, []);
 
   return (
-    <ToastProvider>
-      <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-semibold text-text-primary-light dark:text-text-primary-dark">
-            Dashboard
-          </h1>
-          <p className="text-text-secondary mt-1">
-            Welcome back! Here's your overview for today.
-          </p>
-        </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-semibold text-text-primary-light dark:text-text-primary-dark">
+          Dashboard
+        </h1>
+        <p className="text-text-secondary mt-1">
+          Welcome back! Here's your overview for today.
+        </p>
+      </div>
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -375,7 +373,6 @@ export const Dashboard: React.FC = () => {
           editTask={editingTask}
         />
       </div>
-    </ToastProvider>
   );
 };
 
