@@ -1,18 +1,6 @@
 # Cloudflare Pages configuration
 name = "homework-planner"
 compatibility_date = "2024-12-17"
+[assets]
+directory = "./dist"
 
-# Build configuration
-[build]
-command = "npm run build"
-watch_dirs = ["src", "public"]
-
-[build.upload]
-format = "directory"
-dir = "dist"
-
-# Environment variables (if needed)
-[vars]
-
-# Pages-specific settings
-pages_build_output_dir = "dist"
