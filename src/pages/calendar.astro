@@ -1,0 +1,8 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+import CalendarView from '../components/islands/CalendarView';
+---
+
+<DashboardLayout title="Calendar - Homework Planner" activeNav="calendar">
+  <CalendarView client:load />
+</DashboardLayout>

@@ -1,0 +1,8 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+import SubjectManager from '../components/islands/SubjectManager';
+---
+
+<DashboardLayout title="Subjects - Homework Planner" activeNav="subjects">
+  <SubjectManager client:load />
+</DashboardLayout>

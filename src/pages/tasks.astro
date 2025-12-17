@@ -1,0 +1,8 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+import TaskList from '../components/islands/TaskList';
+---
+
+<DashboardLayout title="Tasks - Homework Planner" activeNav="dashboard">
+  <TaskList client:load />
+</DashboardLayout>

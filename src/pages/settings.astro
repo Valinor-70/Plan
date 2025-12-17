@@ -1,0 +1,338 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+---
+
+<DashboardLayout title="Settings - Homework Planner" activeNav="settings">
+  <div class="space-y-6">
+    <div>
+      <h1 class="text-2xl font-semibold text-text-primary-light dark:text-text-primary-dark">
+        Settings
+      </h1>
+      <p class="text-text-secondary mt-1">
+        Customize your planner experience
+      </p>
+    </div>
+    
+    <!-- Settings Sections -->
+    <div class="space-y-6 max-w-2xl">
+      <!-- Appearance -->
+      <div class="card p-6">
+        <h2 class="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark mb-4">
+          Appearance
+        </h2>
+        
+        <div class="space-y-4">
+          <!-- Theme -->
+          <div class="flex items-center justify-between">
+            <div>
+              <label class="block font-medium text-text-primary-light dark:text-text-primary-dark">
+                Theme
+              </label>
+              <p class="text-sm text-text-secondary">
+                Choose your preferred color scheme
+              </p>
+            </div>
+            <div class="flex items-center gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg" id="theme-selector">
+              <button
+                type="button"
+                data-theme="light"
+                class="theme-btn px-3 py-1.5 text-sm rounded-md transition-colors"
+              >
+                Light
+              </button>
+              <button
+                type="button"
+                data-theme="dark"
+                class="theme-btn px-3 py-1.5 text-sm rounded-md transition-colors"
+              >
+                Dark
+              </button>
+              <button
+                type="button"
+                data-theme="auto"
+                class="theme-btn px-3 py-1.5 text-sm rounded-md transition-colors"
+              >
+                Auto
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Preferences -->
+      <div class="card p-6">
+        <h2 class="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark mb-4">
+          Preferences
+        </h2>
+        
+        <div class="space-y-4">
+          <!-- First Day of Week -->
+          <div class="flex items-center justify-between">
+            <div>
+              <label class="block font-medium text-text-primary-light dark:text-text-primary-dark">
+                First Day of Week
+              </label>
+              <p class="text-sm text-text-secondary">
+                Set the start day for your calendar
+              </p>
+            </div>
+            <select class="input w-32">
+              <option value="0">Sunday</option>
+              <option value="1">Monday</option>
+            </select>
+          </div>
+          
+          <!-- Date Format -->
+          <div class="flex items-center justify-between">
+            <div>
+              <label class="block font-medium text-text-primary-light dark:text-text-primary-dark">
+                Date Format
+              </label>
+              <p class="text-sm text-text-secondary">
+                How dates are displayed
+              </p>
+            </div>
+            <select class="input w-40">
+              <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+              <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+              <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+            </select>
+          </div>
+          
+          <!-- Time Format -->
+          <div class="flex items-center justify-between">
+            <div>
+              <label class="block font-medium text-text-primary-light dark:text-text-primary-dark">
+                Time Format
+              </label>
+              <p class="text-sm text-text-secondary">
+                12-hour or 24-hour clock
+              </p>
+            </div>
+            <select class="input w-32">
+              <option value="12h">12 Hour</option>
+              <option value="24h">24 Hour</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Data Management -->
+      <div class="card p-6">
+        <h2 class="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark mb-4">
+          Data Management
+        </h2>
+        
+        <div class="space-y-4">
+          <!-- Export Data -->
+          <div class="flex items-center justify-between">
+            <div>
+              <label class="block font-medium text-text-primary-light dark:text-text-primary-dark">
+                Export Data
+              </label>
+              <p class="text-sm text-text-secondary">
+                Download all your data as JSON
+              </p>
+            </div>
+            <button
+              type="button"
+              id="export-btn"
+              class="btn btn-secondary btn-sm"
+            >
+              Export
+            </button>
+          </div>
+          
+          <!-- Import Data -->
+          <div class="flex items-center justify-between">
+            <div>
+              <label class="block font-medium text-text-primary-light dark:text-text-primary-dark">
+                Import Data
+              </label>
+              <p class="text-sm text-text-secondary">
+                Restore from a backup
+              </p>
+            </div>
+            <label class="btn btn-secondary btn-sm cursor-pointer">
+              Import
+              <input type="file" accept=".json" class="hidden" id="import-input" />
+            </label>
+          </div>
+          
+          <!-- Clear Data -->
+          <div class="flex items-center justify-between">
+            <div>
+              <label class="block font-medium text-text-primary-light dark:text-text-primary-dark">
+                Clear All Data
+              </label>
+              <p class="text-sm text-text-secondary">
+                Permanently delete all tasks and subjects
+              </p>
+            </div>
+            <button
+              type="button"
+              id="clear-btn"
+              class="btn btn-danger btn-sm"
+            >
+              Clear Data
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Keyboard Shortcuts -->
+      <div class="card p-6">
+        <h2 class="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark mb-4">
+          Keyboard Shortcuts
+        </h2>
+        
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div class="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+            <span class="text-text-secondary">Quick Add Task</span>
+            <kbd class="px-2 py-1 bg-slate-200 dark:bg-slate-700 rounded text-xs font-mono">⌘ K</kbd>
+          </div>
+          <div class="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+            <span class="text-text-secondary">Search</span>
+            <kbd class="px-2 py-1 bg-slate-200 dark:bg-slate-700 rounded text-xs font-mono">⌘ F</kbd>
+          </div>
+          <div class="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+            <span class="text-text-secondary">New Task</span>
+            <kbd class="px-2 py-1 bg-slate-200 dark:bg-slate-700 rounded text-xs font-mono">N</kbd>
+          </div>
+          <div class="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+            <span class="text-text-secondary">Close Modal</span>
+            <kbd class="px-2 py-1 bg-slate-200 dark:bg-slate-700 rounded text-xs font-mono">Esc</kbd>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DashboardLayout>
+
+<script>
+  // Theme selector
+  const themeButtons = document.querySelectorAll('.theme-btn');
+  
+  function updateThemeButtons(currentTheme: string) {
+    themeButtons.forEach((btn) => {
+      const theme = btn.getAttribute('data-theme');
+      if (theme === currentTheme) {
+        btn.classList.add('bg-white', 'dark:bg-slate-900', 'shadow-sm', 'font-medium');
+        btn.classList.remove('text-text-secondary');
+      } else {
+        btn.classList.remove('bg-white', 'dark:bg-slate-900', 'shadow-sm', 'font-medium');
+        btn.classList.add('text-text-secondary');
+      }
+    });
+  }
+  
+  function getCurrentTheme(): string {
+    try {
+      const stored = localStorage.getItem('homework-planner-settings');
+      if (stored) {
+        const settings = JSON.parse(stored);
+        return settings.state?.settings?.theme || 'auto';
+      }
+    } catch (e) {}
+    return 'auto';
+  }
+  
+  function setTheme(theme: string) {
+    const isDark = theme === 'dark' || 
+      (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    
+    // Save to localStorage
+    try {
+      const stored = localStorage.getItem('homework-planner-settings');
+      const settings = stored ? JSON.parse(stored) : { state: { settings: {} } };
+      settings.state = settings.state || { settings: {} };
+      settings.state.settings = settings.state.settings || {};
+      settings.state.settings.theme = theme;
+      localStorage.setItem('homework-planner-settings', JSON.stringify(settings));
+    } catch (e) {}
+    
+    updateThemeButtons(theme);
+  }
+  
+  // Initialize
+  updateThemeButtons(getCurrentTheme());
+  
+  themeButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const theme = btn.getAttribute('data-theme') || 'auto';
+      setTheme(theme);
+    });
+  });
+  
+  // Export functionality
+  document.getElementById('export-btn')?.addEventListener('click', () => {
+    const data: Record<string, unknown> = {};
+    
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('homework-planner-')) {
+        try {
+          data[key] = JSON.parse(localStorage.getItem(key) || '');
+        } catch (e) {
+          data[key] = localStorage.getItem(key);
+        }
+      }
+    }
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `homework-planner-backup-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+  
+  // Import functionality
+  document.getElementById('import-input')?.addEventListener('change', (e) => {
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target?.result as string);
+        
+        Object.entries(data).forEach(([key, value]) => {
+          localStorage.setItem(key, JSON.stringify(value));
+        });
+        
+        alert('Data imported successfully! Refreshing...');
+        window.location.reload();
+      } catch (e) {
+        alert('Failed to import data. Please check the file format.');
+      }
+    };
+    reader.readAsText(file);
+  });
+  
+  // Clear data functionality
+  document.getElementById('clear-btn')?.addEventListener('click', () => {
+    if (confirm('Are you sure you want to delete all data? This action cannot be undone.')) {
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('homework-planner-')) {
+          localStorage.removeItem(key);
+        }
+      }
+      
+      alert('All data cleared! Refreshing...');
+      window.location.reload();
+    }
+  });
+</script>
