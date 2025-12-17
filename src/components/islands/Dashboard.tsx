@@ -84,6 +84,13 @@ export const Dashboard: React.FC = () => {
     setEditingTask(null);
   };
 
+  // Listen for global open-task-form events (dispatched from non-React header)
+  React.useEffect(() => {
+    const openHandler = () => setShowTaskForm(true);
+    window.addEventListener('open-task-form', openHandler as EventListener);
+    return () => window.removeEventListener('open-task-form', openHandler as EventListener);
+  }, []);
+
   return (
     <ToastProvider>
       <div className="space-y-6">

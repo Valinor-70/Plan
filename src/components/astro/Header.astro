@@ -113,4 +113,14 @@
       console.error('Failed to update theme in storage', e);
     }
   }
+
+  // Quick-add: emit a global event so React islands can open the task form
+  const quickAddBtn = document.getElementById('quick-add-btn');
+  quickAddBtn?.addEventListener('click', () => {
+    try {
+      window.dispatchEvent(new CustomEvent('open-task-form'));
+    } catch (e) {
+      console.error('Failed to dispatch open-task-form event', e);
+    }
+  });
 </script>

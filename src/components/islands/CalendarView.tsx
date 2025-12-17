@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon } from 'lucide-react';
 import {
   format,
@@ -100,6 +100,16 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ initialDate = new Da
     setShowTaskForm(false);
     setSelectedTask(null);
   };
+
+  // Listen for global open-task-form events (dispatched from non-React header)
+  useEffect(() => {
+    const openHandler = () => {
+      setSelectedTask(null);
+      setShowTaskForm(true);
+    };
+    window.addEventListener('open-task-form', openHandler as EventListener);
+    return () => window.removeEventListener('open-task-form', openHandler as EventListener);
+  }, []);
 
   // Day names
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];

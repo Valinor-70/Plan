@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Filter, Search, ChevronDown, ListFilter } from 'lucide-react';
 import { useTaskStore } from '../../lib/store/taskStore';
@@ -148,6 +148,13 @@ export const TaskList: React.FC<TaskListProps> = ({ initialView = 'all' }) => {
     setShowTaskForm(false);
     setEditingTask(null);
   };
+
+  // Listen for global open-task-form events (dispatched from non-React header)
+  useEffect(() => {
+    const openHandler = () => setShowTaskForm(true);
+    window.addEventListener('open-task-form', openHandler as EventListener);
+    return () => window.removeEventListener('open-task-form', openHandler as EventListener);
+  }, []);
   
   const togglePriorityFilter = (priority: Task['priority']) => {
     const newPriorities = filters.priorities.includes(priority)

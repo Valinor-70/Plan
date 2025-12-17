@@ -1,0 +1,448 @@
+Improvements and Action Plan for Homework Planner
+===============================================
+
+Date: 2025-12-17
+Location: project root
+
+Purpose
+-------
+This document is a focused, implementation-ready audit and prioritized action plan for the repository. It is intentionally prescriptive and organized so maintainers can follow steps safely and reversibly. No code changes are performed here — this file only documents what to do and where.
+
+Executive summary
+-----------------
+- The repository is an Astro static site using React islands and Zustand for client state. The root currently serves the Dashboard (`src/pages/index.astro`).
+- Missing/important items: a public marketing/landing page, an onboarding `/setup` flow, a privacy-first analytics and insights implementation, accessibility improvements, resiliency for persistence, and basic tests/CI.
+- Priority: add a lightweight marketing index + move the Dashboard to `/dashboard` (safe copy-first workflow); implement local-only analytics and an Insights dashboard (no external ad/tracking vendors required unless requested); improve ARIA and modal focus behavior; add tests for stores and CI.
+
+Audited issues (concise)
+------------------------
+1. Root (`/`) currently renders the Dashboard at `src/pages/index.astro`. No marketing/landing page exists.
+2. No onboarding/setup page (no `src/pages/setup.astro`), leaving first-run UX unclear.
+3. No analytics/insights implementation. The project could benefit from an internal analytics pipeline that computes completion rate, velocity, subject performance, priority distribution, time analysis, and streaks (see Analytics & Insights spec in `saas_planner_prompt.md`).
+4. `src/layouts/MainLayout.astro` references `/og-image.png` which is not present in `public/`.
+5. Navigation links are hard-coded (e.g., `/` for dashboard) in `src/components/astro/Sidebar.astro` and perhaps other places — moving dashboard requires updating these references.
+6. Accessibility: modals and some interactive toggles can be improved (`aria-*`, focus trap, toast live regions).
+7. Persistence: stores use localStorage; consider IndexedDB fallback for large datasets and add robust import/export and quota handling.
+8. No tests or CI configuration present.
+9. Hydration/SSR: ensure stores and islands that rely on browser-only APIs use client directives and guard access to `window`/`localStorage` to avoid mismatch.
+
+Priorities & rationale
+----------------------
+P1 (High): landing + setup + route safety — improves onboarding, SEO, and allows Dashboard to be moved without breaking links.
+P2 (High): internal analytics & Insights dashboard — adds concrete user value and can be implemented fully client-side with privacy controls.
+P3 (Medium): accessibility fixes (modal focus trap, ARIA attributes) and missing OG asset.
+P4 (Medium): persistence hardening (IndexedDB fallback, export/import) and tests/CI.
+
+Detailed recommended work (actionable steps)
+-------------------------------------------
+Notes before you start: prefer copying files and updating route constants rather than immediate renames, so changes are reversible.
+
+Step 1 — Add route constants (atomic safety)
+  - Files to add: `src/lib/config/routes.ts`
+  - Content (example):
+    export const ROUTES = {
+      home: '/',
+      dashboard: '/dashboard',
+      calendar: '/calendar',
+      tasks: '/tasks',
+      subjects: '/subjects',
+      analytics: '/analytics',
+      settings: '/settings',
+      setup: '/setup'
+    }
+  - Replace hard-coded route strings in: `src/components/astro/Sidebar.astro`, `src/components/astro/Header.astro`, and any links in islands.
+
+Step 2 — Create marketing/landing page (index)
+  - Files to add: `src/pages/index.astro` (marketing) OR `src/pages/marketing.astro` + small redirect index.
+  - Minimal content: hero, brief feature bullets, CTAs: `Get started -> /setup` and `Open dashboard -> /dashboard`.
+  - Update `src/layouts/MainLayout.astro` meta (title/description/og:image) for the homepage.
+
+Step 3 — Add onboarding `setup` page
+  - Files to add:
+    - `src/pages/setup.astro`
+    - `src/components/islands/SetupIsland.tsx` (client-only island)
+  - Setup island responsibilities:
+    - Initialize `settingsStore` (theme, date format, firstDayOfWeek, default priority, compactMode, etc.).
+    - Optionally import sample data from `public/sample-data/sample-tasks.json` using `src/lib/utils/storage.ts` or `taskStore.importData()`.
+    - Mark `settingsStore.firstRunComplete = true` and redirect to `ROUTES.dashboard`.
+  - Make setup idempotent and never overwrite existing user data without confirmation.
+
+Step 4 — Move Dashboard (safe, reversible)
+  - Process:
+    1. Copy `src/pages/index.astro` -> `src/pages/dashboard.astro` (preserve client directives and imports).
+    2. Create new `src/pages/index.astro` (marketing page per Step 2) or a redirect that checks `settingsStore.firstRunComplete` and routes accordingly.
+    3. Update all components to use `ROUTES.dashboard` instead of `'/'`.
+    4. Smoke test locally: `npm run dev` and verify `/` and `/dashboard` behave correctly.
+    5. Once validated, remove legacy copies if desired and commit changes on a feature branch.
+
+Step 5 — Internal analytics & Insights (client-only, privacy-first)
+  - Goals: compute metrics described in the Analytics & Insights spec (completion rate, task velocity, subject performance, priority distribution, time analysis, streaks) entirely from the user's local data. Allow export/import and opt-in consent.
+  - Design overview:
+    - Data capture: instrument store actions to emit analytics events (task created, completed, edited, deleted, resumed, time-logged). Do NOT send data externally by default.
+    - Storage: use an `analyticsStore` persisted to IndexedDB (preferred for large timeseries) with localStorage fallback. Add `src/lib/analytics/store.ts` and wrap `idb` (or implement a small wrapper) to persist event logs and aggregated metrics.
+    - Compute: add `src/lib/analytics/compute.ts` with pure functions to compute daily completion rate, 30-day sparkline, tasks-per-day velocity, subject completion rates, priority distribution, estimated vs actual time accuracy, streaks, contribution graph, and projections. Keep these functions deterministic and testable.
+    - UI: implement `src/components/islands/StatsDashboard.tsx` (or `StatsDashboard.tsx`) as a React island that reads aggregated metrics from `analyticsStore` and `taskStore` and renders charts.
+    - Charts: recommended libraries: `recharts` (React-friendly), `react-chartjs-2` (Chart.js), or `apexcharts`. Choose one and add to `package.json` devDependencies. I can scaffold using `recharts` if you confirm.
+    - Insights engine: create `src/lib/analytics/insights.ts` — rule-based heuristics producing human-readable suggestions (e.g., frequent completion times, subjects that exceed estimates, upcoming due counts). Keep heuristics lightweight and explainable.
+    - Consent & settings: add `analyticsEnabled` to `settingsStore` and a consent UI component `src/components/islands/AnalyticsConsent.tsx` that toggles analytics capture and persists consent.
+    - No external sharing by default. If external provider is requested later (PostHog, Plausible), provide an opt-in integration that sends only aggregated or anonymized events after consent.
+
+Step 6 — Charts & visualizations (mapping to spec)
+  - Key metric cards (implement as small stat + mini-chart components):
+    1. Completion Rate: current percentage, trend arrow, 30-day sparkline, this-week vs last-week delta.
+    2. Task Velocity: avg tasks completed/day, line chart over last 3 months, productivity score (normalize velocity by active days).
+    3. Subject Performance: horizontal bar chart listing subject completion rates.
+    4. Priority Distribution: donut chart of priority buckets (pending vs completed overlays).
+    5. Time Analysis: aggregated estimated vs actual time per subject or overall, accuracy metric.
+    6. Streak Tracker: current streak days, longest streak, contribution graph (last 90 days).
+  - Additional visualizations: stacked bar (study hours), calendar heatmap (deadline density), hour-of-day heatmap (peak productivity), tag cloud, upcoming workload projection.
+  - Implementation hints:
+    - Pre-aggregate event logs to daily buckets to keep charts performant.
+    - Cache computed aggregates in IndexedDB and recompute only on new events or store changes.
+    - Keep compute functions pure and unit-testable in `src/lib/analytics/compute.test.ts`.
+
+Step 7 — Accessibility & UX hardening
+  - Modal: update `src/components/ui/Modal.tsx` to include `role="dialog"`, `aria-modal="true"`, `aria-labelledby` and implement focus trap (e.g., `focus-trap` package or custom implementation). Restore focus to trigger on close.
+  - Toggles & nav: add `aria-expanded`, `aria-controls`, and keyboard support to `src/components/astro/Header.astro` and `src/components/astro/Sidebar.astro`.
+  - Toaster: ensure toasts use `role="status"` and `aria-live="polite"`.
+  - Run automated a11y checks (axe, lighthouse) in CI.
+
+Step 8 — Persistence resilience
+  - Implement IndexedDB persistence for larger datasets using `idb` (or `localforage`) in `src/lib/utils/storage.ts` and add fallback to localStorage for smaller payloads.
+  - Add explicit Export/Import in `src/pages/settings.astro` to let users back up data.
+  - Catch and handle `QuotaExceededError` when writing to storage and present helpful UI to users.
+
+Step 9 — Tests & CI
+  - Add unit tests for:
+    - `src/lib/analytics/compute.ts` (aggregation and metrics)
+    - `src/lib/utils/storage.ts` (import/export validation)
+    - `src/lib/store/*` (task/subject/settings store behaviors)
+  - Tools: `vitest` + `@testing-library/react` + `jsdom`.
+  - CI: `.github/workflows/ci.yml` that runs `npm ci`, `npm run build`, `npm test`.
+
+Step 10 — Documentation & developer notes
+  - Document analytics behavior and privacy model in `README.md` and `docs/analytics.md` including: data retention, storage location, opt-in/opt-out behavior, and how to enable external provider integrations.
+  - Provide a migration note in `README.md` describing the move from `/` to `/dashboard` if you perform it.
+
+File list changes proposed (consolidated)
+--------------------------------------
+Add
+  - `src/lib/config/routes.ts` — route constants
+  - `src/pages/index.astro` — marketing / redirect
+  - `src/pages/setup.astro` — onboarding
+  - `src/components/islands/SetupIsland.tsx` — onboarding island
+  - `src/pages/dashboard.astro` — copy of existing `index.astro` (Dashboard)
+  - `src/lib/analytics/store.ts` — analytics persistence
+  - `src/lib/analytics/compute.ts` — aggregation functions
+  - `src/lib/analytics/insights.ts` — suggestions heuristics
+  - `src/components/islands/StatsDashboard.tsx` — analytics UI
+  - `src/components/islands/AnalyticsConsent.tsx` — consent banner
+  - `public/og-image.png` — OG asset (or update MainLayout)
+Modify
+  - `src/components/astro/Sidebar.astro` — use `ROUTES` and update aria attrs
+  - `src/components/astro/Header.astro` — aria attrs
+  - `src/components/ui/Modal.tsx` — focus trap and aria
+  - `src/lib/utils/storage.ts` — add idb/localforage fallback handling
+  - `src/layouts/MainLayout.astro` — include analytics consent island and updated OG meta
+
+Privacy & policy (must-have guardrails)
+------------------------------------
+- Analytics are local-first and opt-in. Do not send user data externally unless the user explicitly opts-in to an external provider and the provider is disclosed.
+- Add an `analyticsEnabled` flag in `settingsStore` and persist user consent.
+- Provide clear Export/Import and Delete-All options in Settings.
+
+Testing and validation checklist
+--------------------------------
+- [ ] Dashboard reachable at `/dashboard` and marketing at `/`.
+- [ ] `/setup` initializes `settingsStore` without overwriting existing user data.
+- [ ] Analytics compute functions produce deterministic outputs for given input events (unit tests present).
+- [ ] IndexedDB fallback works and storage errors are caught and surfaced.
+- [ ] Modal focus trap passes keyboard navigation tests.
+- [ ] CI runs build and tests successfully.
+
+Estimated effort (rough guide)
+----------------------------
+- Route constants + replace references: 0.5–1 hour
+- Marketing index page (minimal): 0.5–2 hours
+- Setup page + island: 2–5 hours
+- Move Dashboard and smoke test: 0.5–1.5 hours
+- Analytics store + compute + tests: 4–12 hours (depends on charts depth)
+- StatsDashboard UI + charts: 4–12 hours (charting lib choice affects time)
+- Accessibility fixes + modal focus trap: 1–3 hours
+- IndexedDB persistence + export/import: 2–6 hours
+- Tests + CI: 2–6 hours
+
+Follow-up questions (pick as many as needed)
+-----------------------------------------
+1) Shall I keep the Dashboard at `/` or move it to `/dashboard` now? (I can prepare patches either way.)
+2) Charting library preference for the Insights dashboard: `recharts`, `react-chartjs-2` (Chart.js), or `apexcharts`?
+3) Do you want analytics strictly local-only (default) or do you want an optional, opt-in external provider integration? If external, which provider (PostHog, Plausible, GA)?
+4) Should onboarding be mandatory on first-run (automatic redirect) or optional from the landing page?
+
+Notes & next steps
+------------------
+- This file is a planning artifact only — no code changed. If you confirm decisions for the follow-up questions I will prepare focused patches for the next tasks (e.g., add `routes.ts`, copy `index.astro` to `dashboard.astro`, scaffold analytics store and compute utilities, and scaffold `StatsDashboard` island).
+
+End of file
+Improvements and Action Plan for Homework Planner
+===============================================
+
+Generated: 2025-12-17
+Repository path: project root
+
+Purpose
+-------
+This document is a comprehensive audit of the current codebase and a prioritized, foolproof plan to:
+- Add a public landing (marketing) page and an onboarding/setup page.
+- Move the current Dashboard from `/` to `/dashboard` (safe, reversible steps).
+- Integrate analytics in a privacy-conscious, extensible way.
+- Address accessibility and technical-debt items discovered in the codebase.
+
+Scope and assumptions
+---------------------
+- The codebase is an Astro project using React islands and Zustand stores.
+- The root currently serves the Dashboard in `src/pages/index.astro`.
+- No external services or credentials are required for this work.
+- All local changes are reversible; no database migrations (app stores to localStorage).
+
+High-level findings (summary)
+-----------------------------
+1. Root route (`/`) currently hosts the Dashboard (`src/pages/index.astro`). There is no separate marketing/landing page or onboarding route.
+2. No analytics system is integrated. `src/layouts/MainLayout.astro` is the natural place to initialize analytics scripts and consent flows.
+3. Several UI components (modals, mobile nav, header toggles) use DOM logic that can be improved for ARIA semantics and keyboard accessibility.
+4. `public/og-image.png` is referenced from the main layout but not present in `public/` — causes 404s and poor social preview.
+5. Navigation (Sidebar) hardcodes Dashboard link to `/` in `src/components/astro/Sidebar.astro` and possibly other places — moving Dashboard requires updating these.
+6. Stores persist to localStorage via utilities in `src/lib/utils/storage.ts` — this is fine for single-device usage but lacks export/import safety, quotas handling, and cloud backup options.
+7. No tests or CI; `package.json` includes `astro check` in the build process but no automated tests.
+
+Complete list of issues and recommended fixes (detailed)
+-----------------------------------------------------
+Issue 1 — No marketing / landing page
+  - Details: The root (`/`) goes to `src/pages/index.astro`, which renders the Dashboard island. This prevents a public/marketing page and confuses first-time users.
+  - Risks: SEO/social preview suffers; inability to present signup/onboarding flows before dashboard.
+  - Recommendation:
+    1. Move Dashboard to `src/pages/dashboard.astro` (or duplicate first, then delete) — see Move Dashboard steps below.
+    2. Create `src/pages/index.astro` containing a marketing or redirect page (or `src/pages/marketing.astro` and make `index.astro` a redirect).
+    3. Update site-level metadata in `src/layouts/MainLayout.astro` for correct OG/meta tags.
+
+Issue 2 — No onboarding/setup page
+  - Details: No `src/pages/setup.astro` or similar exists for first-time setup.
+  - Risks: Users have to manually set options; onboarding cannot initialize sample data.
+  - Recommendation:
+    1. Add `src/pages/setup.astro` that uses `MainLayout` or `DashboardLayout` for look/feel.
+    2. Create a client island `src/components/islands/SetupIsland.tsx` to perform store writes, call `settingsStore` actions, and optionally import sample tasks via `src/lib/utils/storage.ts`.
+    3. Make the setup flow optional or required based on existence of a `settingsStore.firstRunComplete` flag.
+
+Issue 3 — Analytics absent (no centralized initializer)
+  - Details: No vendor analytics script or init module exists. `MainLayout` is ideal to host analytics and consent components.
+  - Recommendation:
+    1. Add `src/lib/analytics/init.ts` that exports `initAnalytics(opts)`, `trackPageview()`, `trackEvent(name, props)`.
+    2. Add an analytics consent banner component (client island) and call `initAnalytics()` after consent.
+    3. Add vendor snippet to `src/layouts/MainLayout.astro` (head) or inject via `client:idle` island depending on provider.
+    4. Suggested providers: Plausible (privacy-friendly), PostHog (self-hostable / event tracking), Google Analytics (if you need GA features). For a simple privacy-first choice, use Plausible or Matomo.
+
+Issue 4 — Navigation link coupling and move risk
+  - Details: `src/components/astro/Sidebar.astro` and mobile nav reference `/` for Dashboard. UI logic and possibly tests assume root is Dashboard.
+  - Recommendation:
+    1. Replace hard-coded `/` occurrences with a single constant export `src/lib/config/routes.ts` (e.g., export const ROUTES = { home: '/', dashboard: '/dashboard', calendar: '/calendar' }).
+    2. Update components to import ROUTES and use `ROUTES.dashboard`.
+    3. When moving Dashboard, update `ROUTES.home` to point to `/` marketing page if necessary.
+
+Issue 5 — Accessibility issues
+  - Details: Modal focus trapping, ARIA attributes for toggles and mobile nav, and some dynamic content may lack proper live-region announcements.
+  - Recommendation:
+    1. Use a well-maintained focus-trap library or implement robust trap inside `src/components/ui/Modal.tsx` with `aria-modal`, `role=\"dialog\"`, `aria-labelledby`/`aria-describedby`.
+    2. Add `aria-expanded`/`aria-controls` to toggle buttons in `src/components/astro/Header.astro` and `src/components/astro/Sidebar.astro`.
+    3. Ensure toasts use `role=\"status\"` and polite live-region; apply `aria-live=\"polite\"` for non-critical messages.
+    4. Run axe or Lighthouse accessibility audits during CI.
+
+Issue 6 — Storage durability and export/import
+  - Details: Stores rely on localStorage via `src/lib/utils/storage.ts`. There's an export/import helper but no default initial sample data for first-run.
+  - Recommendation:
+    1. Add a sample dataset JSON `public/sample-data/sample-tasks.json` and add an import flow in setup.
+    2. Add an explicit `Export/Import` UI in `src/pages/settings.astro` (or reuse existing logic) with clear user instructions.
+    3. When storing large payloads, catch quota-exceeded errors and provide user guidance.
+
+Issue 7 — Missing asset: OG image
+  - Details: `src/layouts/MainLayout.astro` references `/og-image.png` yet this file is absent from `public/`.
+  - Recommendation: add `public/og-image.png` or update `MainLayout` to reference an existing asset. If you want generated OG images, add script/process to build them during CI.
+
+Issue 8 — No tests or CI
+  - Details: No unit tests or CI config present.
+  - Recommendation:
+    1. Add Vitest for unit testing (fast for `src/lib/*` logic). Create `tests/stores.test.ts` covering `taskStore` and `subjectStore` functions (add/update/delete, selectors).
+    2. Add `.github/workflows/ci.yml` to run `npm ci`, `npm run build`, and `npm test`.
+
+Issue 9 — Hydration and SSR concerns
+  - Details: Stores rehydrate date fields and rely on browser-only APIs. Most islands handle client hydration, but review for hydration mismatches.
+  - Recommendation:
+    1. Ensure store initialization uses safe client-only guards (e.g., `if (typeof window !== 'undefined')` before accessing localStorage).
+    2. Use `client:load` or `client:visible` judiciously on islands that require hydrated store data to prevent mismatch errors.
+
+Issue 10 — UX: Setup vs. Dashboard flow
+  - Details: If you move the Dashboard from `/` to `/dashboard` you need a migration strategy so existing users can still access their data.
+  - Recommendation:
+    1. Implement a small redirection page at `/` (index.astro) that detects `firstRunComplete` and redirects to `/dashboard` (client-side) if onboarding done, else to `/setup`.
+    2. Add visible links in Footer or Header to `Settings` and `Export` in case users cannot find their data.
+
+Detailed, step-by-step tasks (implementation-ready)
+-----------------------------------------------
+The following steps are written to be executed in order. Each top-level step includes a short checklist, files to touch, and example code notes.
+
+Step A — Create `improvements.txt` (this file)
+  - Done: add this file to project root.
+
+Step B — Introduce a route constants file
+  - Purpose: avoid hard-coded routes across components and make Dashboard move atomic.
+  - Files to add:
+    - `src/lib/config/routes.ts`
+  - Implementation (example):
+    export const ROUTES = {
+      home: '/',
+      dashboard: '/dashboard',
+      calendar: '/calendar',
+      tasks: '/tasks',
+      subjects: '/subjects',
+      settings: '/settings',
+      analytics: '/analytics',
+      setup: '/setup'
+    }
+  - Update: replace hard-coded `'/'` and other route strings in `src/components/astro/Sidebar.astro`, `Header.astro`, and any other components.
+
+Step C — Add marketing/landing page
+  - Files to add:
+    - `src/pages/index.astro` (new marketing page) OR `src/pages/marketing.astro` + update index.astro to redirect.
+  - Content suggestions:
+    - Hero section describing the planner, CTA buttons: `Get started` -> `/setup`; `Open Dashboard` -> `/dashboard`.
+    - Testimonials, feature list, privacy blurb (local-first), download/export notes.
+  - Example minimal `src/pages/index.astro` content:
+    ---
+    import MainLayout from '../layouts/MainLayout.astro'
+    ---
+
+    <MainLayout title="Homework Planner — Plan Smarter">
+      <main>
+        <h1>Homework Planner</h1>
+        <p>Local-first, privacy-respecting study planner.</p>
+        <a href="/setup">Get started</a>
+        <a href="/dashboard">Open dashboard</a>
+      </main>
+    </MainLayout>
+
+Step D — Create onboarding setup page and island
+  - Files to add:
+    - `src/pages/setup.astro` — uses `MainLayout` or `DashboardLayout`.
+    - `src/components/islands/SetupIsland.tsx` — small React component that runs client-only store writes.
+  - Setup behavior checklist:
+    - Offer theme choice (light/dark/system) and persist via `settingsStore.toggleTheme()` or direct setter.
+    - Offer sample data import: call `storage.import(sampleData)` or write sample tasks to `taskStore`.
+    - Set `settingsStore.firstRunComplete = true`.
+    - Redirect to `ROUTES.dashboard` on completion.
+  - Safety note: make the setup idempotent — do not overwrite existing data unless confirmed.
+
+Step E — Move the Dashboard from `/` to `/dashboard` (safe approach)
+  - Rationale: Keep the original page until new landing exists; don't delete until verified.
+  - Checklist:
+    1. Copy `src/pages/index.astro` -> `src/pages/dashboard.astro` (preserve imports and islands).
+    2. Create new `src/pages/index.astro` marketing file (Step C). If you prefer redirecting temporarily, make index.astro a redirect page that checks `firstRunComplete` and navigates accordingly.
+    3. Update all nav references to use `ROUTES.dashboard` (see Step B).
+    4. Run dev and smoke test: `npm run dev` and verify Dashboard at `/dashboard` and marketing page at `/`.
+    5. When stable, delete old `src/pages/index.astro` copy if not needed (or keep as backup).
+
+Step F — Analytics integration (example with Plausible / GA / PostHog)
+  - Recommendation: implement a provider-agnostic initializer and a consent flow.
+  - Files to add:
+    - `src/lib/analytics/init.ts` — exports `initAnalytics(provider, config)`, `trackPageview()`, `trackEvent()`.
+    - `src/components/islands/AnalyticsConsent.tsx` — small consent banner island.
+    - Edit `src/layouts/MainLayout.astro` to include vendor snippet conditionally or include a small `client:idle` island that calls `initAnalytics()` after consent.
+  - Implementation notes — Plausible:
+    - Add snippet to `<head>` in `MainLayout` (deferred if you want consent-first):
+      <script defer data-domain="yourdomain.com" src="https://plausible.io/js/plausible.js"></script>
+    - Use `window.plausible('pageview')` for manual events.
+  - Implementation notes — Google Analytics (gtag):
+    - Add the recommended snippet with your measurement ID to `MainLayout` head.
+    - Use `gtag('config','G-XXXX', { 'page_path': window.location.pathname })` on initial load and client-side nav events.
+  - Implementation notes — PostHog:
+    - Install `posthog-js` and call `posthog.init('YOUR_KEY', { api_host: 'https://app.posthog.com' })` in `initAnalytics`.
+    - Use `posthog.capture('task_created', {...})` from islands.
+  - Tracking SPA navigations:
+    - Astro sites do full-page nav by default, but if you rely on client-side navigation you should call `trackPageview()` on route changes inside islands or a small client script that listens for `popstate`.
+
+Step G — Accessibility fixes (actionable list)
+  - `src/components/ui/Modal.tsx`:
+    - Add `role=\"dialog\"` and `aria-modal=\"true\"`.
+    - Ensure `aria-labelledby` references the modal title element id.
+    - Implement focus trap (e.g., `focus-trap` library) and restore focus to the trigger on close.
+  - `src/components/astro/Header.astro` and `src/components/astro/Sidebar.astro`:
+    - Add `aria-expanded` and `aria-controls` on toggles.
+    - Ensure keyboard-accessible skip links (e.g., `Skip to content`).
+  - Toasts and live regions:
+    - Use `role=\"status\"` and `aria-live=\"polite\"` for non-critical toasts; `assertive` for urgent alerts only.
+  - Run automated a11y checks in CI (axe, lighthouse).
+
+Step H — Tests and CI
+  - Files to add:
+    - `package.json` devDependencies: `vitest`, `@testing-library/react`, `jsdom` (if not already present).
+    - `tests/stores.test.ts` — tests for `taskStore` and `subjectStore` behaviors.
+    - `.github/workflows/ci.yml` — run `npm ci`, `npm run build`, and `npm test`.
+  - Example test targets:
+    - Add/update/delete tasks via `taskStore` actions.
+    - Ensure `storage` export and import functions behave as expected.
+
+Step I — Deployment, build notes, and rollbacks
+  - Build pipeline currently runs `astro check && astro build` from `package.json`.
+  - If deploying to static hosts (Netlify, Vercel, GitHub Pages), ensure correct `adapter` is configured in `astro.config.mjs` if required.
+  - Rollback approach: keep `dashboard.astro` and `index.astro` copies until marketing page is verified; use git branches for major changes.
+
+Step J — Risk, mitigation, and testing plan
+  - Risk: route move breaks bookmarks or external links.
+    - Mitigation: add temporary redirect page at `/` when moving dashboard; or server-level redirects in hosting.
+  - Risk: analytics script loads before consent.
+    - Mitigation: only load vendor script after explicit consent stored in `settingsStore`.
+  - Risk: localStorage quotas exceeded during sample import.
+    - Mitigation: validate size before write and catch `QuotaExceededError` with user message and suggested export.
+
+Step K — Post-implementation checklist
+  - [ ] Dashboard visible at `/dashboard` and marketing at `/`.
+  - [ ] Setup flow works and sets `firstRunComplete`.
+  - [ ] Analytics initialize only after consent and track pageviews.
+  - [ ] ARIA attributes added and modal focus trap works.
+  - [ ] `public/og-image.png` exists and OG meta renders correctly.
+  - [ ] Tests added and CI passes.
+
+Estimated effort (rough)
+-----------------------
+- Add route constants + replace hard-coded routes: 1–2 hours
+- Add marketing index page: 1–3 hours (content dependent)
+- Add setup page + island: 3–6 hours
+- Move dashboard + test: 1–2 hours
+- Analytics initializer + consent banner: 2–4 hours (depends on provider)
+- Accessibility improvements (modal, ARIA): 2–4 hours
+- Tests + CI: 3–6 hours
+
+Files to create or modify (consolidated)
+------------------------------------
+- Add: `improvements.txt` (this file)
+- Add/modify: `src/lib/config/routes.ts`
+- Add: `src/pages/index.astro` (marketing) or update existing
+- Add: `src/pages/setup.astro`
+- Add: `src/components/islands/SetupIsland.tsx`
+- Add/copy: `src/pages/dashboard.astro` (copy of current `index.astro`)
+- Add: `src/lib/analytics/init.ts`
+- Add: `src/components/islands/AnalyticsConsent.tsx`
+- Add: `public/og-image.png` (asset)
+- Modify: `src/components/astro/Sidebar.astro` and `src/components/astro/Header.astro` (use routes constant, ARIA attrs)
+- Modify: `src/components/ui/Modal.tsx` (focus trap + aria)
+- Add tests: `tests/*.test.ts` and `.github/workflows/ci.yml`
+
+Rollback and backup recommendations
+---------------------------------
+- Before renaming `src/pages/index.astro`, copy it to `src/pages/dashboard.astro` and commit the copy. Keep original until new index is verified.
+- Use a feature branch: `feature/landing-setup-analytics` for all changes and open a PR for review before merging.
+
+Follow-up questions (pick one or more so I can prepare patches):
+1) Should the Dashboard remain reachable at `/` for now or do you want it moved to `/dashboard` immediately? (If moving, I will prepare patches to move and update nav.)
+2) Which analytics provider do you prefer (Plausible, Google Analytics, PostHog, Matomo, or other)?
+3) Should onboarding be mandatory on first-run (automatic redirect to `/setup`) or optional (accessible from marketing page / header)?
+
+End of improvements.txt
