@@ -6,7 +6,10 @@ import { X } from 'lucide-react';
 import Button from './Button';
 
 // Fallback component when FocusTrap is not loaded
-const FocusTrapFallback: React.FC<{ children: React.ReactNode }> = ({ children }) => <>{children}</>;
+const FocusTrapFallback: React.FC<{ children: React.ReactNode; focusTrapOptions?: any }> = ({ children }) => <>{children}</>;
+
+// Type for the FocusTrap component (loaded or fallback)
+type FocusTrapComponent = typeof FocusTrapType | typeof FocusTrapFallback;
 
 export interface ModalProps {
   open: boolean;
@@ -42,16 +45,16 @@ export const Modal: React.FC<ModalProps> = ({
   showCloseButton = true,
 }) => {
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
-  const [FocusTrap, setFocusTrap] = useState<typeof FocusTrapType>(() => FocusTrapFallback as any);
+  const [FocusTrap, setFocusTrap] = useState<FocusTrapComponent>(() => FocusTrapFallback);
 
   // Dynamically import FocusTrap only on the client
   useEffect(() => {
     if (typeof window !== 'undefined') {
       import('focus-trap-react').then((module) => {
-        setFocusTrap(() => module.default as typeof FocusTrapType);
+        setFocusTrap(() => module.default);
       }).catch(() => {
         // Fallback to the simple wrapper if import fails
-        setFocusTrap(() => FocusTrapFallback as any);
+        setFocusTrap(() => FocusTrapFallback);
       });
     }
   }, []);
