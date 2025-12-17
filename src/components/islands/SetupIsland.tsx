@@ -55,8 +55,11 @@ export default function SetupIsland() {
           // Parse date placeholders
           let dueDate = task.dueDate;
           if (dueDate.includes('{{futureDate:')) {
-            const days = parseInt(dueDate.match(/\d+/)[0]);
-            dueDate = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+            const match = dueDate.match(/\d+/);
+            if (match) {
+              const days = parseInt(match[0]);
+              dueDate = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+            }
           }
           
           addTask({

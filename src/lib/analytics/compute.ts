@@ -1,4 +1,4 @@
-import { format, subDays, startOfDay, differenceInDays, isAfter, isBefore } from 'date-fns';
+import { format, subDays, startOfDay, endOfDay, differenceInDays, isAfter, isBefore } from 'date-fns';
 import type { Task, Subject } from '../types';
 import type {
   CompletionMetrics,
@@ -46,7 +46,7 @@ export function computeCompletionMetrics(tasks: Task[]): CompletionMetrics {
   for (let i = 29; i >= 0; i--) {
     const day = subDays(now, i);
     const dayStart = startOfDay(day);
-    const dayEnd = startOfDay(subDays(day, -1));
+    const dayEnd = endOfDay(day);
     const completed = tasks.filter(
       (t) =>
         t.status === 'completed' &&
