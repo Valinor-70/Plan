@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import type { TaskSegment } from '../../lib/store/planningStore';
+import type { Task } from '../../lib/types';
 
 // Draggable Segment Component
 function DraggableSegment({
@@ -43,7 +44,7 @@ function DraggableSegment({
 }: {
   segment: TaskSegment;
   onRemove: (id: string) => void;
-  getTaskInfo: (taskId: string) => any;
+  getTaskInfo: (taskId: string) => Task | undefined;
 }) {
   const {
     attributes,
@@ -215,9 +216,6 @@ export function PlanningPageEnhanced() {
   const getSubjectName = (subjectId: string) => {
     return subjects.find((s) => s.id === subjectId)?.name || 'Unknown';
   };
-
-  // Generate time slots for timeline (24 hours)
-  const timeSlots = Array.from({ length: 24 }, (_, i) => i);
 
   return (
     <div className="space-y-6">

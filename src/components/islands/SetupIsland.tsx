@@ -10,6 +10,8 @@ export default function SetupIsland() {
   const { addSubject } = useSubjectStore();
   const { addTask } = useTaskStore();
   
+  const MAX_STEPS = 5;
+  
   const [step, setStep] = useState(1);
   const [selectedTheme, setSelectedTheme] = useState<UserSettings['theme']>(settings.theme || 'auto');
   const [loadSampleData, setLoadSampleData] = useState(false);
@@ -97,7 +99,7 @@ export default function SetupIsland() {
           name: subj.name,
           color: subj.color,
           description: '',
-          createdAt: new Date(),
+          archived: false,
         });
       });
     }
@@ -115,7 +117,7 @@ export default function SetupIsland() {
   };
 
   const handleNext = () => {
-    if (step < 5) {
+    if (step < MAX_STEPS) {
       setStep(step + 1);
     } else {
       completeSetup();
@@ -144,7 +146,7 @@ export default function SetupIsland() {
 
         {/* Progress Steps */}
         <div className="flex items-center justify-center mb-8 gap-2">
-          {[1, 2, 3, 4, 5].map((s) => (
+          {Array.from({ length: MAX_STEPS }, (_, i) => i + 1).map((s) => (
             <div key={s} className="flex items-center">
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
@@ -163,7 +165,7 @@ export default function SetupIsland() {
                   s
                 )}
               </div>
-              {s < 5 && <div className="w-8 h-0.5 bg-slate-200 dark:bg-slate-700 mx-1" />}
+              {s < MAX_STEPS && <div className="w-8 h-0.5 bg-slate-200 dark:bg-slate-700 mx-1" />}
             </div>
           ))}
         </div>
