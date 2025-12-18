@@ -26,5 +26,22 @@ export interface UserProgress {
     longestStreak: number;
     totalWorkMinutes: number;
     perfectDays: number;
+    // New tracking fields
+    tasksScheduled?: number;
+    totalLoginDays?: number;
+    weeksPlanned?: number;
+    tasksCompletedBeforeDeadline?: number;
+    morningTasksCompleted?: number;
+    categoriesCompleted?: number;
+    tasksFasterThanEstimate?: number;
+    onTimeCompletionStreak?: number;
+    uninterruptedPomodoros?: number;
+    consecutivePomodoros?: number;
+    highCompletionRateDays?: number;
+    perfectEstimates?: number;
+    yearCompletionRate?: number;
+    nightTasksCompleted?: number;
+    earlyTasksCompleted?: number;
+    maxTasksInCategory?: number;
   };
 }

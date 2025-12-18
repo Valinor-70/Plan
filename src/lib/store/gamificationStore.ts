@@ -130,37 +130,99 @@ function getAchievementProgress(
   stats: UserProgress['stats']
 ): { current: number; target: number } {
   switch (achievementId) {
+    // TIER 1: Foundation
     case 'first-steps':
       return { current: Math.min(stats.tasksCompleted, 1), target: 1 };
-    case 'getting-started':
-      return { current: stats.tasksCompleted, target: 5 };
-    case 'task-master':
-      return { current: stats.tasksCompleted, target: 25 };
-    case 'productivity-pro':
-      return { current: stats.tasksCompleted, target: 100 };
-    case 'task-legend':
-      return { current: stats.tasksCompleted, target: 500 };
+    case 'first-completion':
+      return { current: Math.min(stats.tasksCompleted, 1), target: 1 };
+    case 'first-schedule':
+      return { current: Math.min(stats.tasksScheduled || 0, 1), target: 1 };
+    case 'three-day-streak':
+      return { current: stats.longestStreak, target: 3 };
+    case 'weekly-login':
+      return { current: stats.totalLoginDays || 0, target: 7 };
+    case 'first-planned-week':
+      return { current: stats.weeksPlanned || 0, target: 1 };
     
+    // TIER 2: Consistency
     case 'week-warrior':
       return { current: stats.longestStreak, target: 7 };
+    case 'two-week-streak':
+      return { current: stats.longestStreak, target: 14 };
     case 'month-master':
       return { current: stats.longestStreak, target: 30 };
-    case 'unstoppable':
+    case 'sixty-day-streak':
+      return { current: stats.longestStreak, target: 60 };
+    case 'hundred-day-streak':
       return { current: stats.longestStreak, target: 100 };
+    case 'year-warrior':
+      return { current: stats.longestStreak, target: 365 };
+    case 'perfect-week':
+      return { current: stats.perfectDays, target: 7 };
+    case 'perfect-month':
+      return { current: stats.perfectDays, target: 30 };
+    case 'early-finisher':
+      return { current: stats.tasksCompletedBeforeDeadline || 0, target: 50 };
+    case 'morning-person':
+      return { current: stats.morningTasksCompleted || 0, target: 25 };
     
+    // TIER 3: Volume
+    case 'getting-started':
+      return { current: stats.tasksCompleted, target: 10 };
+    case 'task-achiever':
+      return { current: stats.tasksCompleted, target: 50 };
+    case 'productivity-pro':
+      return { current: stats.tasksCompleted, target: 100 };
+    case 'task-master':
+      return { current: stats.tasksCompleted, target: 500 };
+    case 'task-champion':
+      return { current: stats.tasksCompleted, target: 1000 };
+    case 'task-legend':
+      return { current: stats.tasksCompleted, target: 5000 };
+    case 'task-titan':
+      return { current: stats.tasksCompleted, target: 10000 };
+    case 'category-balance':
+      return { current: stats.categoriesCompleted || 0, target: 5 };
+    case 'hundred-hours':
+      return { current: Math.floor(stats.totalWorkMinutes / 60), target: 100 };
+    case 'five-hundred-hours':
+      return { current: Math.floor(stats.totalWorkMinutes / 60), target: 500 };
+    case 'thousand-hours':
+      return { current: Math.floor(stats.totalWorkMinutes / 60), target: 1000 };
+    
+    // TIER 4: Excellence
+    case 'speed-demon':
+      return { current: stats.tasksFasterThanEstimate || 0, target: 100 };
+    case 'efficiency-expert':
+      return { current: stats.onTimeCompletionStreak || 0, target: 20 };
     case 'focus-beginner':
       return { current: stats.pomodorosCompleted, target: 10 };
-    case 'marathon-runner':
-      return { current: stats.pomodorosCompleted, target: 50 };
-    case 'time-master':
-      return { current: Math.floor(stats.totalWorkMinutes / 60), target: 100 };
+    case 'focus-master':
+      return { current: stats.uninterruptedPomodoros || 0, target: 100 };
+    case 'deep-work-champion':
+      return { current: stats.consecutivePomodoros || 0, target: 50 };
+    case 'productivity-perfectionist':
+      return { current: stats.highCompletionRateDays || 0, target: 30 };
+    case 'optimization-guru':
+      return { current: stats.perfectEstimates || 0, target: 50 };
+    
+    // TIER 5: Legendary
+    case 'unstoppable':
+      return { current: stats.longestStreak, target: 365 };
+    case 'perfect-year':
+      return { current: stats.yearCompletionRate || 0, target: 90 };
     case 'zen-master':
       return { current: stats.pomodorosCompleted, target: 500 };
     
+    // Special
+    case 'night-owl':
+      return { current: stats.nightTasksCompleted || 0, target: 10 };
+    case 'early-bird':
+      return { current: stats.earlyTasksCompleted || 0, target: 10 };
     case 'perfectionist':
       return { current: stats.perfectDays, target: 1 };
-    case 'perfect-week':
-      return { current: stats.perfectDays, target: 7 };
+    case 'category-king':
+      return { current: stats.maxTasksInCategory || 0, target: 100 };
     case 'dedication':
       return { current: stats.longestStreak, target: 30 };
     
