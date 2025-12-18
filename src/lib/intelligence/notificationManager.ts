@@ -278,10 +278,8 @@ export class IntelligentNotificationManager {
     const messageGen = getMessageGenerator(settings.heuristicPrefs?.motivationStyle);
     const message = messageGen.generateAchievementMessage(achievementName, description);
 
-    // Legendary achievements always notify
-    const shouldNotify = rarity === 'legendary' || this.shouldSendNotification({} as Task, 'high');
-
-    if (shouldNotify) {
+    // Legendary achievements always notify (bypass checks)
+    if (rarity === 'legendary' || !this.isQuietHours()) {
       useNotificationStore.getState().addNotification({
         type: 'achievement',
         title: '🏆 Achievement Unlocked!',

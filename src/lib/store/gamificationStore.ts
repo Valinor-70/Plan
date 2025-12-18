@@ -132,8 +132,10 @@ function getAchievementProgress(
   switch (achievementId) {
     // TIER 1: Foundation
     case 'first-steps':
+      // Tracks task creation - would need separate stat in real implementation
       return { current: Math.min(stats.tasksCompleted, 1), target: 1 };
     case 'first-completion':
+      // Tracks task completion
       return { current: Math.min(stats.tasksCompleted, 1), target: 1 };
     case 'first-schedule':
       return { current: Math.min(stats.tasksScheduled || 0, 1), target: 1 };

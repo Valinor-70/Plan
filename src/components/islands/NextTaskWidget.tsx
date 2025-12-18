@@ -66,11 +66,12 @@ export const NextTaskWidget: React.FC<NextTaskWidgetProps> = ({
     // Generate personalized message
     if (result) {
       const messageGen = getMessageGenerator(settings.heuristicPrefs?.motivationStyle);
+      const defaultDuration = settings.taskManagementPrefs?.defaultTaskDuration || 60;
       const suggestionMessage = messageGen.generate('suggestion', {
         taskName: result.task.title,
         successRate: Math.round(result.score.successProbability * 100),
         energyLevel: signals.currentEnergyLevel.toString(),
-        comparisonStat: result.task.estimatedDuration?.toString() || '30',
+        comparisonStat: result.task.estimatedDuration?.toString() || defaultDuration.toString(),
         timeOfDay: getTimeOfDay(),
       });
       setMessage(suggestionMessage);

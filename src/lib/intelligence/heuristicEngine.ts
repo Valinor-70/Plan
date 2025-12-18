@@ -371,11 +371,13 @@ export class HeuristicEngine {
     else if (hour >= 12 && hour < 18 && this.weights.contextual.afternoon) {
       contextWeights = { ...contextWeights, ...this.weights.contextual.afternoon };
     }
-    // Evening context (6pm - 12am)
-    else if (hour >= 18 || hour < 6) {
-      if (this.weights.contextual.evening) {
-        contextWeights = { ...contextWeights, ...this.weights.contextual.evening };
-      }
+    // Evening context (6pm - midnight)
+    else if (hour >= 18 && hour < 24 && this.weights.contextual.evening) {
+      contextWeights = { ...contextWeights, ...this.weights.contextual.evening };
+    }
+    // Late night/early morning (midnight - 6am) - treat as evening for now
+    else if (hour >= 0 && hour < 6 && this.weights.contextual.evening) {
+      contextWeights = { ...contextWeights, ...this.weights.contextual.evening };
     }
     
     // Weekend vs weekday
@@ -445,10 +447,15 @@ export class HeuristicEngine {
     const dominantComponent = components[0].name;
     
     // Adjust the dominant component's weight
-    if (dominantComponent in this.weights) {
-      const key = dominantComponent as keyof typeof this.weights;
-      if (typeof this.weights[key] === 'number') {
-        (this.weights[key] as number) *= multiplier;
+    const numericWeightKeys: Array<keyof HeuristicWeights> = [
+      'urgency', 'value', 'friction', 'successProbability', 'recency', 'energyMatch'
+    ];
+    
+    if (numericWeightKeys.includes(dominantComponent as keyof HeuristicWeights)) {
+      const key = dominantComponent as keyof HeuristicWeights;
+      const currentWeight = this.weights[key];
+      if (typeof currentWeight === 'number') {
+        this.weights[key] = currentWeight * multiplier as any;
       }
     }
     
