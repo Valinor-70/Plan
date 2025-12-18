@@ -33,7 +33,7 @@ export function useSmartNotifications() {
             title: '⚠️ Task Overdue',
             message: `"${task.title}" is overdue!`,
             taskId: task.id,
-            actionUrl: `/tasks?task=${task.id}`,
+            actionUrl: `/tasks/index.html?task=${task.id}`,
           });
         }
         
@@ -50,7 +50,7 @@ export function useSmartNotifications() {
             title: '📅 Task Due Soon',
             message: `"${task.title}" is due ${timeText}`,
             taskId: task.id,
-            actionUrl: `/tasks?task=${task.id}`,
+            actionUrl: `/tasks/index.html?task=${task.id}`,
           });
         }
 
@@ -67,7 +67,7 @@ export function useSmartNotifications() {
             title: '💡 Suggestion',
             message: `Start working on "${task.title}" to avoid last-minute rush`,
             taskId: task.id,
-            actionUrl: `/pomodoro?task=${task.id}`,
+            actionUrl: `/pomodoro/index.html?task=${task.id}`,
           });
         }
       });
@@ -87,7 +87,7 @@ export function useSmartNotifications() {
           type: 'suggestion',
           title: '🎯 Productivity Tip',
           message: `You have ${incompleteTasks.length} pending tasks. Consider breaking them into smaller, manageable chunks.`,
-          actionUrl: '/tasks',
+          actionUrl: '/tasks/index.html',
         });
       }
 
@@ -98,7 +98,7 @@ export function useSmartNotifications() {
           type: 'suggestion',
           title: '⚡ Workload Alert',
           message: `You have ${urgentTasks.length} urgent tasks. Consider rescheduling some to balance your workload.`,
-          actionUrl: '/tasks',
+          actionUrl: '/tasks/index.html',
         });
       }
     };

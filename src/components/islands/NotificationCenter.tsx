@@ -153,7 +153,7 @@ export function NotificationCenter() {
             <button
               onClick={() => {
                 setIsOpen(false);
-                window.location.href = '/settings';
+                window.location.href = '/settings/index.html';
               }}
               className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 mx-auto"
             >

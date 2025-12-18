@@ -4,12 +4,12 @@ const OFFLINE_URL = '/offline.html';
 // Assets to cache on install
 const STATIC_ASSETS = [
   '/',
-  '/dashboard',
-  '/calendar',
-  '/subjects',
-  '/pomodoro',
-  '/analytics',
-  '/settings',
+  '/dashboard/index.html',
+  '/calendar/index.html',
+  '/subjects/index.html',
+  '/pomodoro/index.html',
+  '/analytics/index.html',
+  '/settings/index.html',
   '/offline.html'
 ];
 

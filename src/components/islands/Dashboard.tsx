@@ -277,7 +277,7 @@ export const Dashboard: React.FC = () => {
                     <BookOpen className="w-10 h-10 mx-auto mb-3 text-text-tertiary" />
                     <p className="text-text-secondary">No subjects yet</p>
                     <a
-                      href="/subjects"
+                      href="/subjects/index.html"
                       className="mt-2 text-sm text-brand-primary hover:underline inline-block"
                     >
                       Add subjects
@@ -310,7 +310,7 @@ export const Dashboard: React.FC = () => {
                     ))}
                     {upcomingTasks.length > 5 && (
                       <a
-                        href="/?view=upcoming"
+                        href="/index.html?view=upcoming"
                         className="block text-center py-2 text-sm text-brand-primary hover:underline"
                       >
                         View all {upcomingTasks.length} tasks
@@ -347,7 +347,7 @@ export const Dashboard: React.FC = () => {
                     ))}
                     {overdueTasks.length > 5 && (
                       <a
-                        href="/?view=overdue"
+                        href="/index.html?view=overdue"
                         className="block text-center py-2 text-sm text-brand-primary hover:underline"
                       >
                         View all {overdueTasks.length} tasks

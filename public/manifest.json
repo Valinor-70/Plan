@@ -22,28 +22,28 @@
       "name": "Dashboard",
       "short_name": "Dashboard",
       "description": "View your main dashboard",
-      "url": "/dashboard",
+      "url": "/dashboard/index.html",
       "icons": []
     },
     {
       "name": "Add Task",
       "short_name": "Add Task",
       "description": "Create a new task",
-      "url": "/dashboard",
+      "url": "/dashboard/index.html",
       "icons": []
     },
     {
       "name": "Pomodoro Timer",
       "short_name": "Pomodoro",
       "description": "Start a focus session",
-      "url": "/pomodoro",
+      "url": "/pomodoro/index.html",
       "icons": []
     },
     {
       "name": "Analytics",
       "short_name": "Analytics",
       "description": "View your productivity stats",
-      "url": "/analytics",
+      "url": "/analytics/index.html",
       "icons": []
     }
   ],

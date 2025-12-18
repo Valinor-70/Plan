@@ -4,17 +4,17 @@
  */
 export const ROUTES = {
   home: '/',
-  dashboard: '/dashboard',
-  calendar: '/calendar',
-  tasks: '/tasks',
-  subjects: '/subjects',
-  planning: '/planning',
-  analytics: '/analytics',
-  achievements: '/achievements',
-  pomodoro: '/pomodoro',
-  search: '/search',
-  settings: '/settings',
-  setup: '/setup',
+  dashboard: '/dashboard/index.html',
+  calendar: '/calendar/index.html',
+  tasks: '/tasks/index.html',
+  subjects: '/subjects/index.html',
+  planning: '/planning/index.html',
+  analytics: '/analytics/index.html',
+  achievements: '/achievements/index.html',
+  pomodoro: '/pomodoro/index.html',
+  search: '/search/index.html',
+  settings: '/settings/index.html',
+  setup: '/setup/index.html',
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;

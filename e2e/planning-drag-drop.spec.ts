@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Planning Page Drag and Drop', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to planning page
-    await page.goto('/planning');
+    await page.goto('/planning/index.html');
     await page.waitForLoadState('networkidle');
   });
 

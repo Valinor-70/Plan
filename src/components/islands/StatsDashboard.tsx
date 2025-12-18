@@ -121,7 +121,7 @@ export default function StatsDashboard() {
             Enable analytics in settings to track your productivity, completion rates, and get personalized insights.
           </p>
           <a
-            href="/settings"
+            href="/settings/index.html"
             className="inline-flex items-center gap-2 px-6 py-3 bg-brand-primary text-white font-medium rounded-lg hover:bg-indigo-600 transition-colors"
           >
             Go to Settings

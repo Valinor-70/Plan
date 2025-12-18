@@ -37,7 +37,7 @@ test.describe('Dashboard Console Errors', () => {
 
   test('should load dashboard without console errors', async ({ page }) => {
     // Navigate to dashboard
-    await page.goto('/dashboard');
+    await page.goto('/dashboard/index.html');
 
     // Wait for the page to be fully loaded
     await page.waitForLoadState('networkidle');
@@ -101,7 +101,7 @@ test.describe('Dashboard Console Errors', () => {
   });
 
   test('should load planning page without console errors', async ({ page }) => {
-    await page.goto('/planning');
+    await page.goto('/planning/index.html');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
 
